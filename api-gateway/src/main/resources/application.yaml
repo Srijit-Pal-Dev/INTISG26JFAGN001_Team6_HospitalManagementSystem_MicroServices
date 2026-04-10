@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: api-gateway
+#  cloud:
+#    gateway:
+#      server:
+#        webmvc:
+#          routes:
+#            - id: USER-SERVICE
+#              uri: lb://USER-SERVICE
+#              predicates:
+#                - Path=/users/**,/auth/**
+#
+#            - id: NOTIFICATION-SERVICE
+#              uri: lb://NOTIFICATION-SERVICE
+#              predicates:
+#                - Path=/notifications/**
+#
+#            - id: PATIENT-SERVICE
+#              uri: lb://PATIENT-SERVICE
+#              predicates:
+#                - Path=/patient/**
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+              - id: USER-SERVICE
+                uri: lb://USER-SERVICE
+                predicates:
+                  - Path=/users/**,/auth/**
+
+              - id: NOTIFICATION-SERVICE
+                uri: lb://NOTIFICATION-SERVICE
+                predicates:
+                  - Path=/notifications/**
+
+              - id: PATIENT-SERVICE
+                uri: lb://PATIENT-SERVICE
+                predicates:
+                  - Path=/patient/**
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+server:
+  port: 8090
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970cygsgcicgueknkehcigeigsikcgukgcaugkceskygcgcskchaku
+
