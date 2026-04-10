@@ -1,0 +1,41 @@
+body {
+	font-family: Arial;
+	margin: 0;
+	background: white;
+}
+
+.header {
+	background: #0b5ed7;
+	color: white;
+	padding: 15px;
+}
+
+.nav {
+	background: #eef4ff;
+	padding: 10px;
+}
+
+.container {
+	padding: 20px;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th {
+	background: #e7f0ff;
+}
+
+th, td {
+	padding: 10px;
+	border: 1px solid #cbdcff;
+}
+
+button {
+	background: #0b5ed7;
+	color: white;
+	border: none;
+	padding: 6px 12px;
+}

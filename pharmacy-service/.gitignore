@@ -1,0 +1,15 @@
+# Build
+/target/
+
+# Databases
+*.db
+*.mv.db
+*.sqlite
+
+# Logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml

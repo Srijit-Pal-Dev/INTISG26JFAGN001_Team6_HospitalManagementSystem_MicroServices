@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Medicine Details</title>
+<link rel="stylesheet" th:href="@{/cssh2 class="header">
+Hospital Pharmacy System
+</h2>
+
+<div class="container">
+	<h3>Medicine Details</h3>
+
+	<p>
+		ID: <span th:text="${medicine.id}"></span>
+	</p>
+	<p>
+		Name: <span th:text="${medicine.name}"></span>
+	</p>
+	<p>
+		Price: <span th:text="${medicine.pricePerUnit}"></span>
+	</p>
+	<p>
+		Stock: <span th:text="${medicine.stockQuantity}"></span>
+	</p>
+</div>
+</body>
+</html>

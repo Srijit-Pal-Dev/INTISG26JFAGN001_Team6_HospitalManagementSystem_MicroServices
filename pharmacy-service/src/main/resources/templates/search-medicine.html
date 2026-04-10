@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Search Medicine</title>
+<link rel="stylesheet" th:href="@{/css/pharmacy.cssder">
+Hospital Pharmacy System
+</h2>
+
+<div class="container">
+	<h3>Search Medicine</h3>
+
+	<form method="get">
+		<input name="name" placeholder="Medicine name">
+		<button>Search</button>
+	</form>
+
+	<table th:if="${results}">
+		<tr>
+			<th>ID</th>
+			<th>Name</th>
+		</tr>
+		<tr th:each="m : ${results}">
+			<td th:text="${m.id}"></td>
+			<td th:text="${m.name}"></td>
+		</tr>
+	</table>
+</div>
+</body>
+</html>

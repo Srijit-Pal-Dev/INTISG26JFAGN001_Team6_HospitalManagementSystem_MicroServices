@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Pending Dispense</title>
+<link rel="stylesheet" th:href="@{/
+
+<h2 class="header">
+Hospital Pharmacy System
+</h2>
+
+<div class="container">
+	<h3>Pending Dispense</h3>
+
+	<table>
+		<tr>
+			<th>ID</th>
+			<th>Medicine</th>
+			<th>Qty</th>
+			<th>Action</th>
+		</tr>
+		<tr th:each="d : ${requests}">
+			<td th:text="${d.id}"></td>
+			<td th:text="${d.medicineName}"></td>
+			<td th:text="${d.quantity}"></td>
+			<td>
+				<form th:action="@{/ui/pharmacy/dispense/{id}(id=${d.id})}"
+					method="n>
+					Dispense
+					</button>
+				</form>
+			</td>
+		</tr>
+	</table>
+</div>
+</body>
+</html>
