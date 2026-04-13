@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.cognizant</groupId>
-    <artifactId>pharmacy-service</artifactId>
+    <artifactId>prescription-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name/>
     <description/>
@@ -209,3 +209,4 @@
         </plugins>
     </build>
 </project>
+

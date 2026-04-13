@@ -40,6 +40,11 @@ spring:
                 predicates:
                   - Path=/patient/**
 
+              - id: PHARMACY-SERVICE
+                uri: lb://PHARMACY-SERVICE
+                predicates:
+                  - Path=/medicines/**,/dispense/**
+
 eureka:
   client:
     register-with-eureka: true

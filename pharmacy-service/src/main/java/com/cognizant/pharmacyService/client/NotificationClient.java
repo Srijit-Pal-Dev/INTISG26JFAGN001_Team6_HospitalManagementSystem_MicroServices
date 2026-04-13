@@ -9,6 +9,6 @@ import java.util.Map;
 @FeignClient(name = "NOTIFICATION-SERVICE", fallback = NotificationClientFallback.class)
 public interface NotificationClient {
 
-	@PostMapping("/send")
-	void notifyUser(@RequestBody Map<String, Object> request);
+    @PostMapping("/send")
+    void notifyUser(@RequestBody Map<String, Object> request);
 }

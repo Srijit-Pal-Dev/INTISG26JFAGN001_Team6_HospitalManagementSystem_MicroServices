@@ -1,0 +1,63 @@
+package com.cognizant.prescriptionservice.controller;
+
+import com.cognizant.prescriptionservice.dto.CreatePrescriptionRequest;
+import com.cognizant.prescriptionservice.dto.PrescriptionResponse;
+import com.cognizant.prescriptionservice.service.PrescriptionService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/prescriptions")
+@RequiredArgsConstructor
+public class PrescriptionController {
+
+    private final PrescriptionService prescriptionService;
+
+    /**
+     * Create prescription
+     * ROLE: DOCTOR
+     */
+    @PostMapping("/create")
+    public ResponseEntity<PrescriptionResponse> createPrescription(
+            @RequestHeader("X-ROLE") String role,
+            @RequestHeader("X-USER-ID") Long doctorUserId,
+            @Valid @RequestBody CreatePrescriptionRequest request
+    ) {
+        if (!"DOCTOR".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        PrescriptionResponse response =
+                prescriptionService.createPrescription(doctorUserId, request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public PrescriptionResponse getPrescriptionById(
+            @RequestHeader("X-ROLE") String role,
+            @PathVariable Long id
+    ) {
+        return prescriptionService.getPrescriptionById(id);
+    }
+
+    @GetMapping("/appointment/{appointmentId}")
+    public ResponseEntity<PrescriptionResponse> getPrescriptionByAppointmentId(
+            @RequestHeader("X-ROLE") String role,
+            @PathVariable Long appointmentId
+    ) {
+        // ✅ Role validation
+        if (!"DOCTOR".equalsIgnoreCase(role) && !"PATIENT".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        PrescriptionResponse response =
+                prescriptionService.getPrescriptionByAppointmentId(appointmentId);
+
+        return ResponseEntity.ok(response);
+    }
+
+}
