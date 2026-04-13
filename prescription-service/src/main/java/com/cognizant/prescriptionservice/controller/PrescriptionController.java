@@ -22,8 +22,8 @@ public class PrescriptionController {
      */
     @PostMapping("/create")
     public ResponseEntity<PrescriptionResponse> createPrescription(
-            @RequestHeader("X-User-Role") String role,
-            @RequestHeader("X-User-Id") Long doctorUserId,
+            @RequestHeader("X-ROLE") String role,
+            @RequestHeader("X-USER-ID") Long doctorUserId,
             @Valid @RequestBody CreatePrescriptionRequest request
     ) {
         if (!"DOCTOR".equalsIgnoreCase(role)) {
@@ -38,7 +38,7 @@ public class PrescriptionController {
 
     @GetMapping("/{id}")
     public PrescriptionResponse getPrescriptionById(
-            @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-ROLE") String role,
             @PathVariable Long id
     ) {
         return prescriptionService.getPrescriptionById(id);
@@ -46,7 +46,7 @@ public class PrescriptionController {
 
     @GetMapping("/appointment/{appointmentId}")
     public ResponseEntity<PrescriptionResponse> getPrescriptionByAppointmentId(
-            @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-ROLE") String role,
             @PathVariable Long appointmentId
     ) {
         // ✅ Role validation
