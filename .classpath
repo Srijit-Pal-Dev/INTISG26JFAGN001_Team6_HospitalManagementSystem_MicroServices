@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="api-gateway/src/main/java"/>
+	<classpathentry kind="src" path="api-gateway/src/test/java"/>
+	<classpathentry kind="src" path="billing-service/src/main/java"/>
+	<classpathentry kind="src" path="billing-service/src/test/java"/>
+	<classpathentry kind="src" path="notification-service/src/main/java"/>
+	<classpathentry kind="src" path="notification-service/src/test/java"/>
+	<classpathentry kind="src" path="patient-service/src/main/java"/>
+	<classpathentry kind="src" path="patient-service/src/test/java"/>
+	<classpathentry excluding="com/cognizant/prescriptionservice/config/" kind="src" path="prescription-service/src/main/java"/>
+	<classpathentry kind="src" path="prescription-service/src/main/java/com/cognizant/prescriptionservice/config"/>
+	<classpathentry kind="src" path="prescription-service/src/test/java"/>
+	<classpathentry excluding="com/cognizant/pharmacyService/config/" kind="src" path="service/src/main/java"/>
+	<classpathentry kind="src" path="service/src/main/java/com/cognizant/pharmacyService/config"/>
+	<classpathentry kind="src" path="service/src/test/java"/>
+	<classpathentry kind="src" path="service-registry/src/main/java"/>
+	<classpathentry kind="src" path="service-registry/src/test/java"/>
+	<classpathentry kind="src" path="user-service/src/main/java"/>
+	<classpathentry kind="src" path="user-service/src/test/java"/>
+	<classpathentry kind="output" path="service/target/classes"/>
+</classpath>
