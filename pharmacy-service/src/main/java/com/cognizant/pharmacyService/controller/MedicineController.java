@@ -87,7 +87,7 @@ public class MedicineController {
 	public List<PharmacyDTO> getMedicinesByAppointmentId(@RequestHeader("X-User-Role") String role,
 			@PathVariable("appointmentId") Long appointmentId) {
 
-		if (!role.equalsIgnoreCase("PHARMACIST")) {
+		if (!role.equalsIgnoreCase("PHARMACIST") && !role.equalsIgnoreCase("ADMIN")) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacist can update medicine");
 		}
 
