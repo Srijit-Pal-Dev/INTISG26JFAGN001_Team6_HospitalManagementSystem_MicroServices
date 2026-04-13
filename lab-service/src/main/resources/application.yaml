@@ -1,18 +1,20 @@
 server:
-  port: 8084
+  port: 8087
 
 spring:
   application:
-    name: PHARMACY-SERVICE
+    name: lab-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/hospital_pharmacy_db
+    url: jdbc:mysql://localhost:3306/lab_db
+    driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: root
 
   jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
@@ -22,26 +24,25 @@ spring:
     config:
       enabled: false
 
-    openfeign:
-      circuitbreaker:
-        enabled: true
+  config:
+    import-check:
+      enabled: false
 
 resilience4j:
   circuitbreaker:
     instances:
-      BILLING-SERVICE:
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
+      notificationServiceCB:
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-
-      NOTIFICATION-SERVICE:
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+      billingServiceCB:
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
 
 eureka:
   client:

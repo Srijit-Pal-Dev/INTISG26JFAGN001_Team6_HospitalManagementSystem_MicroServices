@@ -5,6 +5,7 @@ import com.cognizant.pharmacyService.dto.MedicineRequest;
 import com.cognizant.pharmacyService.dto.MedicineResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
 @Mapper(componentModel = "spring")
 public interface MedicineMapper {
