@@ -1,5 +1,6 @@
 package com.cognizant.pharmacyService.controller;
 
+import com.cognizant.pharmacyService.client.BillingClient.PharmacyDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import com.cognizant.pharmacyService.dto.MedicineRequest;
 import com.cognizant.pharmacyService.dto.MedicineResponse;
+import com.cognizant.pharmacyService.service.DispenseService;
 import com.cognizant.pharmacyService.service.MedicineService;
 import java.util.List;
 
@@ -21,9 +23,11 @@ import java.util.List;
 public class MedicineController {
 
 	private final MedicineService medicineService;
+	private final DispenseService dispenseService;
 
-	public MedicineController(MedicineService medicineService) {
+	public MedicineController(MedicineService medicineService, DispenseService dispenseService) {
 		this.medicineService = medicineService;
+		this.dispenseService = dispenseService;
 	}
 
 	@GetMapping
@@ -77,5 +81,17 @@ public class MedicineController {
 		}
 
 		return medicineService.updateMedicine(id, request);
+	}
+
+	@GetMapping("/appointment/{appointmentId}")
+	public List<PharmacyDTO> getMedicinesByAppointmentId(@RequestHeader("X-User-Role") String role,
+			@PathVariable("appointmentId") Long appointmentId) {
+
+		if (!role.equalsIgnoreCase("PHARMACIST") && !role.equalsIgnoreCase("ADMIN")) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacist can update medicine");
+		}
+
+		return dispenseService.getMedicinesByAppointmentId(appointmentId);
+
 	}
 }

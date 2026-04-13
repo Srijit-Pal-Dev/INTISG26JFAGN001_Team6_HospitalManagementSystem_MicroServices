@@ -1,14 +1,17 @@
 package com.cognizant.pharmacyService.service;
 
+import com.cognizant.pharmacyService.client.BillingClient.PharmacyDTO;
 import java.util.List;
 import com.cognizant.pharmacyService.dto.CreateDispenseRequest;
 import com.cognizant.pharmacyService.dto.DispenseRequestResponse;
 
 public interface DispenseService {
 
-    List<DispenseRequestResponse> getPendingRequests();
+	List<DispenseRequestResponse> getPendingRequests();
 
-    void createDispenseRequest(CreateDispenseRequest request);
+	void createDispenseRequest(CreateDispenseRequest request);
 
-    void dispense(Long id);
+	void dispense(Long id);
+
+	List<PharmacyDTO> getMedicinesByAppointmentId(Long appointmentId);
 }

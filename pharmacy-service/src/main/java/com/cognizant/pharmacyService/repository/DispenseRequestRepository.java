@@ -23,4 +23,6 @@ public interface DispenseRequestRepository extends JpaRepository<DispenseRequest
 			    AND d.status = 'DISPENSED'
 			""")
 	BigDecimal calculateTotalMedicineFee(@Param("appointmentId") Long appointmentId);
+
+	List<DispenseRequest> findByAppointmentIdAndStatus(Long appointmentId, DispenseStatus status);
 }
