@@ -7,19 +7,29 @@ import com.cognizant.prescriptionservice.service.DoctorService;
 import com.cognizant.prescriptionservice.service.DoctorSlotService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/doctors")
-@RequiredArgsConstructor
 public class DoctorController {
 
     private final DoctorService doctorService;
     private final DoctorSlotService doctorSlotService;
+
+    public DoctorController(
+            DoctorService doctorService,
+            DoctorSlotService doctorSlotService
+    ){
+        this.doctorService = doctorService;
+        this.doctorSlotService = doctorSlotService;
+    }
 
     /**
      * Get doctor profile
@@ -27,7 +37,7 @@ public class DoctorController {
      */
     @GetMapping("/profile/{userId}")
     public DoctorResponse getDoctorProfile(
-            @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-ROLE") String role,
             @PathVariable Long userId
     ) {
         // optional validation
@@ -42,7 +52,7 @@ public class DoctorController {
      */
     @PutMapping("/profile/update/{userId}")
     public DoctorResponse updateDoctorProfile(
-            @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-ROLE") String role,
             @PathVariable Long userId,
             @Valid @RequestBody DoctorProfileRequest request
     ) {
@@ -52,18 +62,38 @@ public class DoctorController {
         return doctorService.updateDoctorProfile(userId, request);
     }
 
-    @PostMapping("/slots")
-    public ResponseEntity<String> addDoctorSlots(
-            @RequestHeader("X-User-Role") String role,
+    @PostMapping("/create")
+    public ResponseEntity<String> createSlot(
+            @RequestHeader("X-ROLE") String role,
+            @RequestBody DoctorSlotRequest slot
+    ) {
+        if (!"DOCTOR".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only DOCTOR can create slots");
+        }
+
+        doctorSlotService.addDoctorSlots(List.of(slot));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Doctor slot created successfully");
+    }
+
+    /**
+     * ✅ CREATE MANY SLOTS
+     */
+    @PostMapping("/create-many")
+    public ResponseEntity<String> createManySlots(
+            @RequestHeader("X-ROLE") String role,
             @RequestBody List<DoctorSlotRequest> slots
     ) {
         if (!"DOCTOR".equalsIgnoreCase(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Only doctors can add slots");
+                    .body("Only DOCTOR can create slots");
         }
 
         doctorSlotService.addDoctorSlots(slots);
-        return ResponseEntity.ok("Doctor slots added successfully");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Doctor slots created successfully");
     }
+
 }
 

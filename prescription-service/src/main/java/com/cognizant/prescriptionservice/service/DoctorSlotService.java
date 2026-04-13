@@ -7,4 +7,6 @@ import java.util.List;
 public interface DoctorSlotService {
 
     void addDoctorSlots(List<DoctorSlotRequest> slots);
+
+    void createSlot(DoctorSlotRequest slot);
 }
