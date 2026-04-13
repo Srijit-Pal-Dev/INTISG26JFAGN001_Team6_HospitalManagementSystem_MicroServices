@@ -109,10 +109,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     status to READY, creates payment record and sends notification to patient. If lab
     fee is not yet updated, it keeps status as PENDING. */
 	@Override
-	public InvoiceDTO updateMedicineFee(Long invoiceId, BigDecimal medicineFee, List<PharmacyDTO> medicines) {
+	public InvoiceDTO updateMedicineFee(Long appointmentId, BigDecimal medicineFee, List<PharmacyDTO> medicines) {
 		Invoice invoice = invoiceRepository
-			.findById(invoiceId)
-			.orElseThrow(() -> new RuntimeException("Invoice with id " + invoiceId + " not found"));
+			.findById(appointmentId)
+			.orElseThrow(() -> new RuntimeException("Appointment with id " + appointmentId + " not found"));
 
 		invoice.setMedicineFee(medicineFee);
 		List<LabDTO> labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
@@ -149,10 +149,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     payment record and sends notification to patient. If medicine fee is not yet updated,
     it keeps status as PENDING. */
 	@Override
-	public InvoiceDTO updateLabFee(Long invoiceId, BigDecimal labFee, List<LabDTO> labTests) {
+	public InvoiceDTO updateLabFee(Long appointmentId, BigDecimal labFee, List<LabDTO> labTests) {
 		Invoice invoice = invoiceRepository
-			.findById(invoiceId)
-			.orElseThrow(() -> new RuntimeException("Invoice with id " + invoiceId + " not found"));
+			.findById(appointmentId)
+			.orElseThrow(() -> new RuntimeException("Appointment with id " + appointmentId + " not found"));
 
 		invoice.setLabFee(labFee);
 		List<PharmacyDTO> medicines = getMedicinesByAppointmentId(invoice.getAppointmentId());

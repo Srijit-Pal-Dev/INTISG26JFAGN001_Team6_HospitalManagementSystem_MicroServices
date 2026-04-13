@@ -12,3 +12,4 @@ public interface NotificationClient {
     @PostMapping("/send")
     void notifyUser(@RequestBody Map<String, Object> request);
 }
+

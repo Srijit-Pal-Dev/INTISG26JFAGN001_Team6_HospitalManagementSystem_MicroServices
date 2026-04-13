@@ -41,14 +41,14 @@ public class InvoiceController {
 	@PutMapping("/update/medicine-fee/{invoiceId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> updateMedicineFee(
 		@RequestHeader("X-User-Roles") String roles,
-		@PathVariable Long invoiceId,
+		@PathVariable Long appointmentId,
 		@RequestParam BigDecimal medicineFee,
 		@RequestBody List<PharmacyDTO> medicines
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("PHARMACIST")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
-		InvoiceDTO updatedInvoice = invoiceService.updateMedicineFee(invoiceId, medicineFee, medicines);
+		InvoiceDTO updatedInvoice = invoiceService.updateMedicineFee(appointmentId, medicineFee, medicines);
 		if (updatedInvoice != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Invoice Updated Successfully", updatedInvoice));
 		} else {
@@ -59,14 +59,14 @@ public class InvoiceController {
 	@PutMapping("/update/lab-fee/{invoiceId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> updateLabFee(
 		@RequestHeader("X-User-Roles") String roles,
-		@PathVariable Long invoiceId,
+		@PathVariable Long appointmentId,
 		@RequestParam BigDecimal labFee,
 		@RequestBody List<LabDTO> labTests
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("LAB_TECHNICIAN")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
-		InvoiceDTO updatedInvoice = invoiceService.updateLabFee(invoiceId, labFee, labTests);
+		InvoiceDTO updatedInvoice = invoiceService.updateLabFee(appointmentId, labFee, labTests);
 		if (updatedInvoice != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Invoice Updated Successfully", updatedInvoice));
 		} else {
