@@ -29,7 +29,6 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        // ✅ PUBLIC ENDPOINTS
         if (path.startsWith("/auth/")
                 || path.startsWith("/actuator/")
                 || path.startsWith("/swagger-ui")
@@ -41,7 +40,6 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
-        // ✅ Missing token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return unauthorized(exchange, "JWT token is missing");
         }
@@ -50,7 +48,6 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
             String token = authHeader.substring(7);
             Claims claims = jwtUtil.parseToken(token);
 
-            // ✅ Expired token
             if (jwtUtil.isExpired(claims)) {
                 return unauthorized(exchange, "JWT token has expired");
             }
@@ -58,7 +55,6 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
             String userId = claims.get("userId").toString();
             List<String> roles = claims.get("roles", List.class);
 
-            // ✅ REAL HTTP HEADERS
             ServerHttpRequest mutatedRequest = exchange.getRequest()
                     .mutate()
                     .header("X-User-Id", userId)
@@ -74,9 +70,6 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
         }
     }
 
-    /**
-     * ✅ Centralized 401 handler with JSON body
-     */
     private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
 
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
