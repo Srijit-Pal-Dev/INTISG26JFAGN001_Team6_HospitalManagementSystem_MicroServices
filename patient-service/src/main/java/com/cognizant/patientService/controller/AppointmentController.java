@@ -22,7 +22,7 @@ public class AppointmentController {
 
 	@PostMapping("/create")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> createAppointment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@Valid @RequestBody AppointmentDTO appointmentDTO
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -38,7 +38,7 @@ public class AppointmentController {
 
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id,
 		@Valid @RequestBody AppointmentDTO appointmentDTO
 	) {
@@ -55,7 +55,7 @@ public class AppointmentController {
 
 	@GetMapping("/id/{id}")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> getApointmentById(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -73,7 +73,7 @@ public class AppointmentController {
 
 	@GetMapping("/patient/{patientId}")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointmentByPatientId(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long patientId
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -91,7 +91,7 @@ public class AppointmentController {
 
 	@GetMapping("/doctor/{doctorId}")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointmentByDoctorId(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long doctorId
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -109,7 +109,7 @@ public class AppointmentController {
 
 	@GetMapping("/status")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointmentByStatus(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@RequestParam Status status
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -127,7 +127,7 @@ public class AppointmentController {
 
 	@GetMapping("/all")
 	public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAllAppointments(
-		@RequestHeader("X-USER-Roles") String roles
+		@RequestHeader("X-User-Role") String roles
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
@@ -142,7 +142,7 @@ public class AppointmentController {
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<ApiResponse<Void>> deleteAppointment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -165,7 +165,7 @@ public class AppointmentController {
 
 	@PutMapping("/complete/{id}")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> completeAppointment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("DOCTOR")) {

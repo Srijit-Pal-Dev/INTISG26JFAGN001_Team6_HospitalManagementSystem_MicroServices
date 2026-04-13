@@ -22,7 +22,7 @@ public class MediclaimController {
 
 	@PostMapping("/process")
 	public ResponseEntity<ApiResponse<MediclaimDTO>> processMediclaim(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@Valid @RequestBody MediclaimDTO mediclaimDTO
 	) {
 		if (!roles.contains("USER") && !roles.contains("ADMIN")) {
@@ -38,7 +38,7 @@ public class MediclaimController {
 
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ApiResponse<MediclaimDTO>> updateMediclaim(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id,
 		@RequestParam MediclaimStatus status
 	) {
@@ -55,7 +55,7 @@ public class MediclaimController {
 
 	@GetMapping("/id/{id}")
 	public ResponseEntity<ApiResponse<MediclaimDTO>> getMediclaimById(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("USER") && !roles.contains("RECEPTIONIST")) {
@@ -71,7 +71,7 @@ public class MediclaimController {
 
 	@GetMapping("/patient/{patientId}")
 	public ResponseEntity<ApiResponse<List<MediclaimDTO>>> getMediclaimByPatientId(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long patientId
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -89,7 +89,7 @@ public class MediclaimController {
 
 	@GetMapping("/all")
 	public ResponseEntity<ApiResponse<List<MediclaimDTO>>> getAllMediclaims(
-		@RequestHeader("X-USER-Roles") String roles
+		@RequestHeader("X-User-Role") String roles
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
@@ -104,7 +104,7 @@ public class MediclaimController {
 
 	@GetMapping("/status/{status}")
 	public ResponseEntity<ApiResponse<List<MediclaimDTO>>> getMediclaimsByStatus(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable MediclaimStatus status
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {

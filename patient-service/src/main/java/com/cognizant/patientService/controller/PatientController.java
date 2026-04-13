@@ -23,7 +23,7 @@ public class PatientController {
 
 	@PostMapping("/create")
 	public ResponseEntity<ApiResponse<PatientDTO>> createPatient(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@Valid @RequestBody PatientDTO patientDTO
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -44,7 +44,7 @@ public class PatientController {
 
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ApiResponse<PatientDTO>> updatePatient(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id,
 		@Valid @RequestBody PatientDTO patientDTO
 	) {
@@ -60,7 +60,7 @@ public class PatientController {
 	}
 
 	@GetMapping("/")
-	public ResponseEntity<ApiResponse<List<PatientDTO>>> getAllPatient(@RequestHeader("X-USER-Roles") String roles) {
+	public ResponseEntity<ApiResponse<List<PatientDTO>>> getAllPatient(@RequestHeader("X-User-Role") String roles) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
@@ -74,7 +74,7 @@ public class PatientController {
 
 	@GetMapping("/id/{id}")
 	public ResponseEntity<ApiResponse<PatientDTO>> getPatientById(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -90,7 +90,7 @@ public class PatientController {
 
 	@GetMapping("/mrn/{mrn}")
 	public ResponseEntity<ApiResponse<PatientDTO>> getPatientByMrn(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable String mrn
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -106,7 +106,7 @@ public class PatientController {
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<ApiResponse<PatientDTO>> deletePatient(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {

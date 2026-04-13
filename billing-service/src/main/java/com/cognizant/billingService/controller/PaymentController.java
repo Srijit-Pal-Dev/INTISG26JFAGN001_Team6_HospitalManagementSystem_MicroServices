@@ -22,7 +22,7 @@ public class PaymentController {
 
 	@PostMapping("/initiate")
 	public ResponseEntity<ApiResponse<PaymentDTO>> initiatePayment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long invoiceId
 	) {
 		if (
@@ -43,7 +43,7 @@ public class PaymentController {
 
 	@PutMapping("/update")
 	public ResponseEntity<ApiResponse<PaymentDTO>> updatePayment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@RequestBody PaymentDTO paymentDTO
 	) {
 		if (
@@ -64,7 +64,7 @@ public class PaymentController {
 
 	@PutMapping("/complete")
 	public ResponseEntity<ApiResponse<PaymentDTO>> completePayment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long paymentId,
 		@RequestParam PaymentMethod paymentMethod
 	) {
@@ -81,7 +81,7 @@ public class PaymentController {
 
 	@PutMapping("/cancel")
 	public ResponseEntity<ApiResponse<PaymentDTO>> cancelPayment(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long paymentId
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -97,7 +97,7 @@ public class PaymentController {
 
 	@GetMapping("/id/{id}")
 	public ResponseEntity<ApiResponse<PaymentDTO>> getPaymentById(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
@@ -112,7 +112,7 @@ public class PaymentController {
 	}
 
 	@GetMapping("/all-payments")
-	public ResponseEntity<ApiResponse<List<PaymentDTO>>> getAllPayments(@RequestHeader("X-USER-Roles") String roles) {
+	public ResponseEntity<ApiResponse<List<PaymentDTO>>> getAllPayments(@RequestHeader("X-User-Role") String roles) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
@@ -126,7 +126,7 @@ public class PaymentController {
 
 	@GetMapping("/patient/{patientId}")
 	public ResponseEntity<ApiResponse<List<PaymentDTO>>> getPaymentsByPatientId(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long patientId
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("USER") && !roles.contains("RECEPTIONIST")) {
@@ -144,7 +144,7 @@ public class PaymentController {
 
 	@GetMapping("/invoice/{invoiceId}")
 	public ResponseEntity<ApiResponse<PaymentDTO>> getPaymentsByInvoiceId(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long invoiceId
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("USER") && !roles.contains("RECEPTIONIST")) {
@@ -162,7 +162,7 @@ public class PaymentController {
 
 	@GetMapping("/status")
 	public ResponseEntity<ApiResponse<List<PaymentDTO>>> getPaymentsByStatus(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@RequestParam PaymentStatus status
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {

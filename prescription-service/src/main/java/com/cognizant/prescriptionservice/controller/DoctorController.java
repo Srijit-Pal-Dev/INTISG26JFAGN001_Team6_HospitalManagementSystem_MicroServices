@@ -27,7 +27,7 @@ public class DoctorController {
      */
     @GetMapping("/profile/{userId}")
     public DoctorResponse getDoctorProfile(
-            @RequestHeader("X-ROLE") String role,
+            @RequestHeader("X-User-Role") String role,
             @PathVariable Long userId
     ) {
         // optional validation
@@ -42,7 +42,7 @@ public class DoctorController {
      */
     @PutMapping("/profile/update/{userId}")
     public DoctorResponse updateDoctorProfile(
-            @RequestHeader("X-ROLE") String role,
+            @RequestHeader("X-User-Role") String role,
             @PathVariable Long userId,
             @Valid @RequestBody DoctorProfileRequest request
     ) {
@@ -54,7 +54,7 @@ public class DoctorController {
 
     @PostMapping("/slots")
     public ResponseEntity<String> addDoctorSlots(
-            @RequestHeader("X-ROLE") String role,
+            @RequestHeader("X-User-Role") String role,
             @RequestBody List<DoctorSlotRequest> slots
     ) {
         if (!"DOCTOR".equalsIgnoreCase(role)) {

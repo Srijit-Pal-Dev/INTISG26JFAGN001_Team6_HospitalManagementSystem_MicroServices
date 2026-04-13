@@ -23,7 +23,7 @@ public class InvoiceController {
 
 	@PostMapping("/generate")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> initiateInvoice(
-		@RequestHeader("X-User-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@RequestParam Long patientId,
 		@RequestParam Long appointmentId
 	) {
@@ -40,7 +40,7 @@ public class InvoiceController {
 
 	@PutMapping("/update/medicine-fee/{invoiceId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> updateMedicineFee(
-		@RequestHeader("X-User-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long appointmentId,
 		@RequestParam BigDecimal medicineFee,
 		@RequestBody List<PharmacyDTO> medicines
@@ -58,7 +58,7 @@ public class InvoiceController {
 
 	@PutMapping("/update/lab-fee/{invoiceId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> updateLabFee(
-		@RequestHeader("X-User-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long appointmentId,
 		@RequestParam BigDecimal labFee,
 		@RequestBody List<LabDTO> labTests
@@ -76,7 +76,7 @@ public class InvoiceController {
 
 	@GetMapping("/id/{invoiceId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> getInvoiceById(
-		@RequestHeader("X-User-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long invoiceId
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST") && !roles.contains("USER")) {
@@ -93,7 +93,7 @@ public class InvoiceController {
 	}
 
 	@GetMapping("/all-invoices")
-	public ResponseEntity<ApiResponse<List<InvoiceDTO>>> getAllInvoices(@RequestHeader("X-User-Roles") String roles) {
+	public ResponseEntity<ApiResponse<List<InvoiceDTO>>> getAllInvoices(@RequestHeader("X-User-Role") String roles) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
@@ -107,7 +107,7 @@ public class InvoiceController {
 
 	@DeleteMapping("/delete/{invoiceId}")
 	public ResponseEntity<ApiResponse<Void>> deleteInvoice(
-		@RequestHeader("X-User-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long invoiceId
 	) {
 		if (!roles.contains("ADMIN")) {

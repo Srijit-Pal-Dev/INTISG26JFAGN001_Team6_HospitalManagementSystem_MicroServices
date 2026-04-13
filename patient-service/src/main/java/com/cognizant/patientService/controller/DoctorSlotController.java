@@ -24,7 +24,7 @@ public class DoctorSlotController {
 
 	@PostMapping("/create")
 	public ResponseEntity<ApiResponse<DoctorSlotDTO>> createSlot(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@Valid @RequestBody DoctorSlotDTO doctorSlotDTO
 	) {
 		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
@@ -42,7 +42,7 @@ public class DoctorSlotController {
 
 	@PostMapping("/create-many")
 	public ResponseEntity<ApiResponse<List<DoctorSlotDTO>>> createManySlots(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@RequestParam Long doctorId,
 		@Valid @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate slotDate,
 		@Valid @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime startTime,
@@ -70,7 +70,7 @@ public class DoctorSlotController {
 
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ApiResponse<DoctorSlotDTO>> updateSlot(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id,
 		@Valid @RequestBody DoctorSlotDTO doctorSlotDTO
 	) {
@@ -89,7 +89,7 @@ public class DoctorSlotController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponse<DoctorSlotDTO>> getSlotById(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (
@@ -112,7 +112,7 @@ public class DoctorSlotController {
 
 	@GetMapping("/doctor/{doctorId}")
 	public ResponseEntity<ApiResponse<List<DoctorSlotDTO>>> getSlotByDoctorId(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long doctorId
 	) {
 		if (
@@ -136,7 +136,7 @@ public class DoctorSlotController {
 	}
 
 	@GetMapping("/")
-	public ResponseEntity<ApiResponse<List<DoctorSlotDTO>>> getAllSlots(@RequestHeader("X-USER-Roles") String roles) {
+	public ResponseEntity<ApiResponse<List<DoctorSlotDTO>>> getAllSlots(@RequestHeader("X-User-Role") String roles) {
 		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
 			return ResponseEntity
 				.status(403)
@@ -152,7 +152,7 @@ public class DoctorSlotController {
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<ApiResponse<DoctorSlotDTO>> deleteSlot(
-		@RequestHeader("X-USER-Roles") String roles,
+		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
 		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
