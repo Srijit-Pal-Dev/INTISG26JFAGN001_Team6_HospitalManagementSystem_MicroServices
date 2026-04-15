@@ -14,6 +14,7 @@ public class DoctorSlotRequest {
 
     private Long id;
     private Long doctorId;
+    private Long userId;
 
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate slotDate;

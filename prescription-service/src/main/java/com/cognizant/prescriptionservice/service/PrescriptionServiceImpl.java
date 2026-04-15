@@ -20,7 +20,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
     private final DoctorRepository doctorRepository;
 
-    // ✅ RESTORED METHOD — THIS FIXES THE ERROR
     @Override
     public PrescriptionResponse createPrescription(
             Long doctorUserId,

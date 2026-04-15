@@ -25,7 +25,7 @@ public class DispenseController {
         this.dispenseService = dispenseService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public void createDispenseRequest(
             @RequestHeader("X-User-Role") String role,
             @RequestBody CreateDispenseRequest request) {

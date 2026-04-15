@@ -137,7 +137,7 @@ public class AuthServiceImpl implements AuthService {
                 .map(r -> r.getName().name())
                 .collect(Collectors.toList());
 
-        String newAccessToken = jwtUtil.generateToken(user.getUsername(),roles);
+        String newAccessToken = jwtUtil.generateToken(user.getId(), user.getUsername(),roles);
 
         return Map.of("New accessToken",newAccessToken);
     }
