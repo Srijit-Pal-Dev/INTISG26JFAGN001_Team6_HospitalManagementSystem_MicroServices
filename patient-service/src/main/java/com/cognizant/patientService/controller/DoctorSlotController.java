@@ -25,6 +25,7 @@ public class DoctorSlotController {
 	@PostMapping("/create")
 	public ResponseEntity<ApiResponse<DoctorSlotDTO>> createSlot(
 		@RequestHeader("X-User-Role") String roles,
+		@RequestHeader("X-User-Id") Long userId,
 		@Valid @RequestBody DoctorSlotDTO doctorSlotDTO
 	) {
 		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
@@ -32,7 +33,7 @@ public class DoctorSlotController {
 				.status(403)
 				.body(new ApiResponse<>(403, "Forbidden: You don't have permission to access this resource", null));
 		}
-		DoctorSlotDTO created = doctorSlotService.createSlot(doctorSlotDTO);
+		DoctorSlotDTO created = doctorSlotService.createSlot(doctorSlotDTO, userId);
 		if (created != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Doctor Slot Created Successfully", created));
 		} else {

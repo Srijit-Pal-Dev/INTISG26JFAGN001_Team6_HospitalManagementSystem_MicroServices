@@ -6,34 +6,38 @@ import com.cognizant.prescriptionservice.dto.DoctorResponse;
 
 public class DoctorMapper {
 
-    private DoctorMapper() {
-        // utility class
-    }
+	private DoctorMapper() {
+		// utility class
+	}
 
-    public static DoctorResponse toResponse(Doctor doctor) {
-        if (doctor == null) {
-            return null;
-        }
+	public static Doctor toEntity(DoctorProfileRequest request) {
+		if (request == null) {
+			return null;
+		}
+		return Doctor
+			.builder()
+			.userId(request.getUserId())
+			.fullName(request.getFullName())
+			.specialty(request.getSpecialty())
+			.qualification(request.getQualification())
+			.experienceYears(request.getExperienceYears())
+			.consultationFee(request.getConsultationFee())
+			.build();
+	}
 
-        return DoctorResponse.builder()
-                .id(doctor.getId())
-                .userId(doctor.getUserId())
-                .fullName(doctor.getFullName())
-                .specialty(doctor.getSpecialty())
-                .qualification(doctor.getQualification())
-                .experienceYears(doctor.getExperienceYears())
-                .consultationFee(doctor.getConsultationFee())
-                .build();
-    }
-
-    public static void updateDoctorFromRequest(
-            DoctorProfileRequest request,
-            Doctor doctor
-    ) {
-        doctor.setFullName(request.getFullName());
-        doctor.setSpecialty(request.getSpecialty());
-        doctor.setQualification(request.getQualification());
-        doctor.setExperienceYears(request.getExperienceYears());
-        doctor.setConsultationFee(request.getConsultationFee());
-    }
+	public static DoctorResponse toDTO(Doctor response) {
+		if (response == null) {
+			return null;
+		}
+		return DoctorResponse
+			.builder()
+			.id(response.getId())
+			.userId(response.getUserId())
+			.fullName(response.getFullName())
+			.specialty(response.getSpecialty())
+			.qualification(response.getQualification())
+			.experienceYears(response.getExperienceYears())
+			.consultationFee(response.getConsultationFee())
+			.build();
+	}
 }

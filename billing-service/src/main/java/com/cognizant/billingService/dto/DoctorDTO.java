@@ -18,6 +18,6 @@ public class DoctorDTO {
 	private String fullName;
 	private String specialty;
 	private String qualification;
-	private int experienceYears;
+	private Integer experienceYears;
 	private BigDecimal consultationFee;
 }

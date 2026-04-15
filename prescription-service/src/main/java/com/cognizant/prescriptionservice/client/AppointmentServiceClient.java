@@ -15,14 +15,14 @@ import java.util.List;
 )
 public interface AppointmentServiceClient {
 
-    /* ✅ CREATE SINGLE SLOT */
+    /* CREATE SINGLE SLOT */
     @PostMapping("/doctors/slots/create")
     DoctorSlotRequest createSlot(
             @RequestHeader("X-USER-Roles") String role,
             @RequestBody DoctorSlotRequest slot
     );
 
-    /* ✅ CREATE MANY SLOTS */
+    /* CREATE MANY SLOTS */
     @PostMapping("/doctors/slots/create-many")
     List<DoctorSlotRequest> createManySlots(
             @RequestHeader("X-USER-Roles") String role,

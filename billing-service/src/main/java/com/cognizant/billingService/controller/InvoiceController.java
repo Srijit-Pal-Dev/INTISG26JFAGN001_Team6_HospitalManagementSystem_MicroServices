@@ -21,15 +21,11 @@ public class InvoiceController {
 		this.invoiceService = invoiceService;
 	}
 
-	@PostMapping("/generate")
+	@PostMapping("/generate/{patientId}/{appointmentId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> initiateInvoice(
-		@RequestHeader("X-User-Role") String roles,
-		@RequestParam Long patientId,
-		@RequestParam Long appointmentId
+		@PathVariable Long patientId,
+		@PathVariable Long appointmentId
 	) {
-		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
-			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
-		}
 		InvoiceDTO invoice = invoiceService.initiateInvoice(patientId, appointmentId);
 		if (invoice != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Invoice Generated Successfully", invoice));
@@ -38,17 +34,18 @@ public class InvoiceController {
 		}
 	}
 
-	@PutMapping("/update/medicine-fee/{invoiceId}")
+	@PutMapping("/update/medicine-fee/{appointmentId}/{medicineFee}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> updateMedicineFee(
 		@RequestHeader("X-User-Role") String roles,
-		@PathVariable Long appointmentId,
-		@RequestParam BigDecimal medicineFee,
+		@RequestHeader("X-User-Id") Long userId,
+		@PathVariable("appointmentId") Long appointmentId,
+		@PathVariable("medicineFee") BigDecimal medicineFee,
 		@RequestBody List<PharmacyDTO> medicines
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("PHARMACIST")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
-		InvoiceDTO updatedInvoice = invoiceService.updateMedicineFee(appointmentId, medicineFee, medicines);
+		InvoiceDTO updatedInvoice = invoiceService.updateMedicineFee(userId, appointmentId, medicineFee, medicines);
 		if (updatedInvoice != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Invoice Updated Successfully", updatedInvoice));
 		} else {
@@ -56,7 +53,7 @@ public class InvoiceController {
 		}
 	}
 
-	@PutMapping("/update/lab-fee/{invoiceId}")
+	@PutMapping("/update/lab-fee/{appointmentId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> updateLabFee(
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long appointmentId,

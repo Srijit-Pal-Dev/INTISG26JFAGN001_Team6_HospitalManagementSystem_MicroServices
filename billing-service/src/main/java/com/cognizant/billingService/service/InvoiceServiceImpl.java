@@ -51,10 +51,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     record and sends notification to patient. */
 	@Override
 	public InvoiceDTO initiateInvoice(Long patientId, Long appointmentId) {
+		System.out.println("Initiating invoice for patientId: " + patientId + ", appointmentId: " + appointmentId);
 		PatientDTO patient = getPatientInfo(patientId);
+		System.out.println("Patient : " + patient);
 		AppointmentDTO appointment = getAppointmentInfo(appointmentId);
+		System.out.println("Appointment : " + appointment);
 		DoctorDTO doctor = getDoctorInfo(appointment.getDoctorId());
-
+		System.out.println("Doctor : " + appointment.getDoctorId());
+		System.out.println(getNotification(1L));
 		Long count = invoiceRepository.count() + 1;
 		String generatedInvoice = "INV" + String.format("%05d", count);
 
@@ -65,8 +69,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 		invoice.setConsultationFee(doctor.getConsultationFee());
 		invoice.setInvoiceNumber(generatedInvoice);
 		List<PharmacyDTO> medicines = getMedicinesByAppointmentId(appointmentId);
-		List<LabDTO> labTests = getLabTestsByAppointmentId(appointmentId);
-		if ((medicines == null || medicines.isEmpty()) && (labTests == null || labTests.isEmpty())) {
+		//List<LabDTO> labTests = getLabTestsByAppointmentId(appointmentId);
+		if ((medicines == null || medicines.isEmpty())) {
 			// No medicines or labs -> invoice is READY immediately
 			invoice.calculateTotalAmount();
 			invoice.setInvoiceStatus(InvoiceStatus.READY);
@@ -109,21 +113,27 @@ public class InvoiceServiceImpl implements InvoiceService {
     status to READY, creates payment record and sends notification to patient. If lab
     fee is not yet updated, it keeps status as PENDING. */
 	@Override
-	public InvoiceDTO updateMedicineFee(Long appointmentId, BigDecimal medicineFee, List<PharmacyDTO> medicines) {
+	public InvoiceDTO updateMedicineFee(
+		Long userId,
+		Long appointmentId,
+		BigDecimal medicineFee,
+		List<PharmacyDTO> medicines
+	) {
 		Invoice invoice = invoiceRepository
 			.findById(appointmentId)
 			.orElseThrow(() -> new RuntimeException("Appointment with id " + appointmentId + " not found"));
 
 		invoice.setMedicineFee(medicineFee);
-		List<LabDTO> labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
-		if (labTests == null || labTests.isEmpty()) {
-			invoice.calculateTotalAmount();
+		//		List<LabDTO> labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
+		//		if (labTests == null || labTests.isEmpty()) {
+		if (true) {
+			invoice.setTotalAmount(invoice.calculateTotalAmount());
 			invoice.setInvoiceStatus(InvoiceStatus.READY);
 			Invoice updatedInvoice = invoiceRepository.save(invoice);
 			createPaymentForInvoice(updatedInvoice, invoice.getPatientId());
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(invoice.getPatientId())
+				.userId(userId)
 				.title("Invoice Ready for Payment")
 				.message(
 					"Your invoice " +
@@ -263,7 +273,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 	//Circuit Breaker methods for all the external service calls in this class
 	@CircuitBreaker(name = "patientServiceCB", fallbackMethod = "getPatientInfoFallback")
 	private PatientDTO getPatientInfo(Long patientId) {
-		return patientClient.getPatientById(patientId);
+		String roles = "ADMIN,USER,RECEPTIONIST";
+		System.out.println("Patient ID in getPatientInfo: " + patientId);
+		return patientClient.getPatientById(roles, patientId).getData();
 	}
 
 	private PatientDTO getPatientInfoFallback(Long patientId, Throwable t) {
@@ -273,7 +285,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@CircuitBreaker(name = "patientServiceCB", fallbackMethod = "getAppointmentInfoFallback")
 	private AppointmentDTO getAppointmentInfo(Long appointmentId) {
-		return patientClient.getAppointmentById(appointmentId);
+		String roles = "ADMIN,USER,RECEPTIONIST";
+		return patientClient.getAppointmentById(roles, appointmentId).getData();
 	}
 
 	private AppointmentDTO getAppointmentInfoFallback(Long appointmentId, Throwable t) {
@@ -283,7 +296,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@CircuitBreaker(name = "doctorServiceCB", fallbackMethod = "getDoctorInfoFallback")
 	private DoctorDTO getDoctorInfo(Long doctorId) {
-		return doctorClient.getDoctorById(doctorId);
+		String roles = "ADMIN,USER,RECEPTIONIST";
+		System.out.println("Doctor ID in getDoctorInfo: " + doctorId);
+		return doctorClient.getDoctorById(roles, doctorId);
 	}
 
 	private DoctorDTO getDoctorInfoFallback(Long doctorId, Throwable t) {
@@ -293,7 +308,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@CircuitBreaker(name = "pharmacyServiceCB", fallbackMethod = "getMedicinesByAppointmentIdFallback")
 	private List<PharmacyDTO> getMedicinesByAppointmentId(Long appointmentId) {
-		return pharmacyClient.getMedicinesByAppointmentId(appointmentId);
+		String roles = "ADMIN,USER,RECEPTIONIST,PHARMACIST";
+		return pharmacyClient.getMedicinesByAppointmentId(roles, appointmentId);
 	}
 
 	private List<PharmacyDTO> getMedicinesByAppointmentIdFallback(Long appointmentId, Throwable t) {
@@ -303,7 +319,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@CircuitBreaker(name = "labServiceCB", fallbackMethod = "getLabTestsByAppointmentIdFallback")
 	private List<LabDTO> getLabTestsByAppointmentId(Long appointmentId) {
-		return labClient.getLabTestsByAppointmentId(appointmentId);
+		String roles = "ADMIN,USER,RECEPTIONIST,LAB_TECHNICIAN";
+		return labClient.getLabTestsByAppointmentId(roles, appointmentId).getData();
 	}
 
 	private List<LabDTO> getLabTestsByAppointmentIdFallback(Long appointmentId, Throwable t) {
@@ -315,6 +332,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 	private NotificationDTO createNotification(NotificationDTO notification) {
 		notificationClient.send(notification);
 		return notification;
+	}
+
+	@CircuitBreaker(name = "notificationServiceCB", fallbackMethod = "createNotificationFallback")
+	private List<NotificationDTO> getNotification(Long id) {
+		return notificationClient.getAll(id);
 	}
 
 	private NotificationDTO createNotificationFallback(NotificationDTO notification, Throwable t) {

@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @Builder
 public class DoctorProfileRequest {
 
+    private Long userId;
     @NotBlank
     private String fullName;
 
