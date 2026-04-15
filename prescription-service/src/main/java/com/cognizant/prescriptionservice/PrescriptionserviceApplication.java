@@ -10,7 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableDiscoveryClient
 public class PrescriptionserviceApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(PrescriptionserviceApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(PrescriptionserviceApplication.class, args);
+	}
 }

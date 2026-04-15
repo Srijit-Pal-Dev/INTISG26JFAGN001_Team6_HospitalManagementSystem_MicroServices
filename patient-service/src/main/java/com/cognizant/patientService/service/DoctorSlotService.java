@@ -6,7 +6,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 public interface DoctorSlotService {
-	DoctorSlotDTO createSlot(DoctorSlotDTO doctorSlotDTO);
+	DoctorSlotDTO createSlot(DoctorSlotDTO doctorSlotDTO, Long userId);
 
 	List<DoctorSlotDTO> createManySlots(
 		Long doctorId,

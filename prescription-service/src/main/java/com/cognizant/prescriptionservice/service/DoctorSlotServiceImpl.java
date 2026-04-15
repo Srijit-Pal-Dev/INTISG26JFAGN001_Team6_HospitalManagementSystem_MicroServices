@@ -1,29 +1,36 @@
 package com.cognizant.prescriptionservice.service;
 
 import com.cognizant.prescriptionservice.client.AppointmentServiceClient;
+import com.cognizant.prescriptionservice.domain.Doctor;
 import com.cognizant.prescriptionservice.dto.DoctorSlotRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
+import com.cognizant.prescriptionservice.repository.DoctorRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class DoctorSlotServiceImpl implements DoctorSlotService {
 
-    private final AppointmentServiceClient appointmentServiceClient;
+	private final AppointmentServiceClient appointmentServiceClient;
+	private final DoctorRepository doctorRepository;
 
-    @Override
-    public void createSlot(DoctorSlotRequest slot) {
-        appointmentServiceClient.createSlot("DOCTOR", slot);
-    }
+	@Override
+	public void createSlot(DoctorSlotRequest slot) {
+		Doctor doctor = doctorRepository
+			.findById(slot.getDoctorId())
+			.orElseThrow(() -> new RuntimeException("Doctor not found with id: " + slot.getDoctorId()));
+		slot.setUserId(doctor.getUserId());
+		appointmentServiceClient.createSlot("DOCTOR", slot);
+	}
 
-    @Override
-    public void addDoctorSlots(List<DoctorSlotRequest> slots) {
-        for (DoctorSlotRequest slot : slots) {
-            createSlot(slot);
-        }
-    }
+	@Override
+	public void addDoctorSlots(List<DoctorSlotRequest> slots) {
+		for (DoctorSlotRequest slot : slots) {
+			createSlot(slot);
+		}
+	}
 }

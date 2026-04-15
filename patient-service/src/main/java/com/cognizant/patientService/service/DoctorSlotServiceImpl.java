@@ -37,7 +37,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
     associated with the slot, informing them about the creation of the new slot. Finally, it returns the created slot
     as a DoctorSlotDTO. */
 	@Override
-	public DoctorSlotDTO createSlot(DoctorSlotDTO doctorSlotDTO) {
+	public DoctorSlotDTO createSlot(DoctorSlotDTO doctorSlotDTO, Long userId) {
 		Optional<DoctorSlot> existing = doctorSlotRepository.findByDoctorIdAndSlotDateAndSlotTime(
 			doctorSlotDTO.getDoctorId(),
 			doctorSlotDTO.getSlotDate(),
@@ -47,7 +47,10 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
 		if (existing.isPresent()) {
 			throw new SlotAlreadyExistsException("Slot already created for the given date and time");
 		}
+		doctorSlotDTO.setUserId(userId);
+		System.out.println("Creating DoctorSlot with data: " + doctorSlotDTO);
 		DoctorSlot slot = DoctorSlotMapper.toEntity(doctorSlotDTO);
+		System.out.println("DoctorSlot entity created: " + slot);
 		DoctorSlot saved = doctorSlotRepository.save(slot);
 		NotificationDTO notification = NotificationDTO
 			.builder()

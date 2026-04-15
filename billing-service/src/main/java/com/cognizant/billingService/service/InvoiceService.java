@@ -10,7 +10,7 @@ import java.util.List;
 public interface InvoiceService {
     InvoiceDTO initiateInvoice(Long patientId, Long appointmentId);
 
-    InvoiceDTO updateMedicineFee(Long appointmentId, BigDecimal medicineFee, List<PharmacyDTO> medicines);
+    InvoiceDTO updateMedicineFee(Long userId, Long appointmentId, BigDecimal medicineFee, List<PharmacyDTO> medicines);
 
     InvoiceDTO updateLabFee(Long appointmentId, BigDecimal labFee, List<LabDTO> labTests);
 

@@ -12,12 +12,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@FeignClient(name = "BILLING-SERVICE", fallback = BillingClient.BillingClientFallback.class)
+@FeignClient(name = "billing-service", fallback = BillingClient.BillingClientFallback.class)
 public interface BillingClient {
 
-	@PutMapping("/update/medicine-fee/{invoiceId}")
-	ResponseEntity<ApiResponse<InvoiceDTO>> updateMedicineFee(@RequestHeader("X-User-Roles") String roles,
-			@PathVariable("invoiceId") Long invoiceId, @RequestParam("medicineFee") BigDecimal medicineFee,
+	@PutMapping("/invoice/update/medicine-fee/{appointmentId}")
+	ResponseEntity<ApiResponse<InvoiceDTO>> updateMedicineFee(@RequestHeader("X-User-Role") String roles,
+			@PathVariable("appointmentId") Long appointmentId, @RequestParam("medicineFee") BigDecimal medicineFee,
 			@RequestBody List<PharmacyDTO> medicines);
 
 	@Component

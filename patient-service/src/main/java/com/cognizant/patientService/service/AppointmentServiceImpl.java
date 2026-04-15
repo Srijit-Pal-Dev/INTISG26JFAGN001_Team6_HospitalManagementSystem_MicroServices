@@ -3,6 +3,7 @@ package com.cognizant.patientService.service;
 import com.cognizant.patientService.client.BillingServiceClient;
 import com.cognizant.patientService.client.NotificationServiceClient;
 import com.cognizant.patientService.domain.Appointment;
+import com.cognizant.patientService.domain.DoctorSlot;
 import com.cognizant.patientService.domain.Patient;
 import com.cognizant.patientService.domain.Status;
 import com.cognizant.patientService.dto.AppointmentDTO;
@@ -11,6 +12,7 @@ import com.cognizant.patientService.dto.NotificationDTO;
 import com.cognizant.patientService.dto.NotificationType;
 import com.cognizant.patientService.mapper.AppointmentMapper;
 import com.cognizant.patientService.repository.AppointmentRepository;
+import com.cognizant.patientService.repository.DoctorSlotRepository;
 import com.cognizant.patientService.repository.PatientRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
@@ -24,17 +26,20 @@ public class AppointmentServiceImpl implements AppointmentService {
 	private final PatientRepository patientRepository;
 	private final BillingServiceClient billingClient;
 	private final NotificationServiceClient notificationClient;
+	private final DoctorSlotRepository doctorSlotRepository;
 
 	public AppointmentServiceImpl(
 		AppointmentRepository appointmentRepository,
 		PatientRepository patientRepository,
 		BillingServiceClient billingClient,
-		NotificationServiceClient notificationClient
+		NotificationServiceClient notificationClient,
+		DoctorSlotRepository doctorSlotRepository
 	) {
 		this.appointmentRepository = appointmentRepository;
 		this.patientRepository = patientRepository;
 		this.billingClient = billingClient;
 		this.notificationClient = notificationClient;
+		this.doctorSlotRepository = doctorSlotRepository;
 	}
 
 	/* this method schedules a new appointment for a patient. It first checks if the
@@ -46,6 +51,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 		Patient patient = patientRepository
 			.findById(appointmentDTO.getPatientId())
 			.orElseThrow(() -> new RuntimeException("Patient with id " + appointmentDTO.getPatientId() + " not found"));
+		DoctorSlot slot = doctorSlotRepository
+			.findById(appointmentDTO.getSlotId())
+			.orElseThrow(() -> new RuntimeException("Doctor slot with id " + appointmentDTO.getSlotId() + " not found")
+			);
+		if (!slot.isBooked()) {
+			throw new RuntimeException("Selected doctor slot is not available");
+		}
 		Appointment appointment = AppointmentMapper.toEntity(appointmentDTO, patient);
 		Appointment savedAppointment = appointmentRepository.save(appointment);
 		NotificationDTO notification = NotificationDTO

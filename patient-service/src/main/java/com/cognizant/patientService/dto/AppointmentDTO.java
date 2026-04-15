@@ -1,6 +1,7 @@
 package com.cognizant.patientService.dto;
 
 import com.cognizant.patientService.domain.Status;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -28,10 +29,11 @@ public class AppointmentDTO {
 	private Status status;
 
 	@NotNull(message = "Appointment date cannot be null")
-	@NotNull(message = "Appointment time cannot be null")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDate appointmentDate;
 
 	@NotNull(message = "Appointment time cannot be null")
+	@JsonFormat(pattern = "HH:mm")
 	private LocalTime appointmentTime;
 
 	private LocalDateTime createdAt;

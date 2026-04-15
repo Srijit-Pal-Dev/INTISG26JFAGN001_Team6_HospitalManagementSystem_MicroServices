@@ -1,5 +1,6 @@
 package com.cognizant.patientService.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.sql.Timestamp;
@@ -36,7 +37,10 @@ public class Appointment {
 	@Column(nullable = false)
 	private Status status = Status.SCHEDULED;
 
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private LocalDate appointmentDate;
+
+	@JsonFormat(pattern = "HH:mm")
 	private LocalTime appointmentTime;
 
 	@CreationTimestamp

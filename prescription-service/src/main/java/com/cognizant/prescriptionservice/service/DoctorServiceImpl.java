@@ -13,28 +13,40 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService {
 
-    private final DoctorRepository doctorRepository;
+	private final DoctorRepository doctorRepository;
 
-    @Override
-    public DoctorResponse getDoctorProfile(Long userId) {
+	@Override
+	public DoctorResponse createDoctorProfile(DoctorProfileRequest request, Long userId) {
+		request.setUserId(userId);
+		Doctor newDoctor = DoctorMapper.toEntity(request);
+		Doctor savedDoctor = doctorRepository.save(newDoctor);
+		return DoctorMapper.toDTO(savedDoctor);
+	}
 
-        Doctor doctor = doctorRepository.findByUserId(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Doctor profile not found"));
+	@Override
+	public DoctorResponse getDoctorProfile(Long userId) {
+		Doctor doctor = doctorRepository
+			.findByUserId(userId)
+			.orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-        return DoctorMapper.toResponse(doctor);
-    }
+		return DoctorMapper.toDTO(doctor);
+	}
 
-    @Override
-    public DoctorResponse updateDoctorProfile(
-            Long userId,
-            DoctorProfileRequest request) {
+	@Override
+	public DoctorResponse updateDoctorProfile(Long userId, DoctorProfileRequest request) {
+		Doctor doctor = doctorRepository
+			.findByUserId(userId)
+			.orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-        Doctor doctor = doctorRepository.findByUserId(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Doctor profile not found"));
+		DoctorMapper.toEntity(request);
+		return DoctorMapper.toDTO(doctorRepository.save(doctor));
+	}
 
-        DoctorMapper.updateDoctorFromRequest(request, doctor);
-        return DoctorMapper.toResponse(doctorRepository.save(doctor));
-    }
+	@Override
+    public DoctorResponse getDoctorById(Long doctorId) {
+		Doctor doctor = doctorRepository
+			.findById(doctorId)
+			.orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
+		return DoctorMapper.toDTO(doctor);
+	}
 }
