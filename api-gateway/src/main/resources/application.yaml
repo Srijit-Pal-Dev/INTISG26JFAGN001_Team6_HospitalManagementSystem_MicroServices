@@ -1,3 +1,210 @@
+#spring:
+#  application:
+#    name: api-gateway
+#
+#  cloud:
+#    gateway:
+#      server:
+#        webflux:
+#          routes:
+#              - id: USER-SERVICE
+#                uri: lb://USER-SERVICE
+#                predicates:
+#                  - Path=/users/**,/auth/**,/v3/api-docs/**
+#
+#              - id: NOTIFICATION-SERVICE
+#                uri: lb://NOTIFICATION-SERVICE
+#                predicates:
+#                  - Path=/notifications/**,/v3/api-docs/**
+#
+#              - id: PATIENT-SERVICE
+#                uri: lb://PATIENT-SERVICE
+#                predicates:
+#                  - Path=/patient/**,/appointment/**,/doctor-slot/**,/v3/api-docs/**
+#
+#              - id: PHARMACY-SERVICE
+#                uri: lb://PHARMACY-SERVICE
+#                predicates:
+#                  - Path=/medicines/**,/dispense/**,/v3/api-docs/**
+#
+#              - id: LAB-SERVICE
+#                uri: lb://LAB-SERVICE
+#                predicates:
+#                  - Path=/lab-tests/**,/v3/api-docs/**
+#
+#              - id: PRESCRIPTION-SERVICE
+#                uri: lb://PRESCRIPTION-SERVICE
+#                predicates:
+#                  - Path=/doctors/**,/prescriptions/**,/v3/api-docs/**
+#
+#              - id: BILLING-SERVICE
+#                uri: lb://BILLING-SERVICE
+#                predicates:
+#                  - Path=/invoice/**,/mediclaim/**,/payment/**,/v3/api-docs/**
+#
+#eureka:
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#  instance:
+#    prefer-ip-address: true
+#
+#server:
+#  port: 8090
+#
+## Actuator
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health
+#  endpoint:
+#    health:
+#      show-details: never
+#
+#jwt:
+#  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970cygsgcicgueknkehcigeigsikcgukgcaugkceskygcgcskchaku
+#
+#springdoc:
+#  api-docs:
+#    path: /v3/api-docs
+#  swagger-ui:
+#    path: /swagger-ui.html
+#    urls:
+#      - name: user-service
+#        url: http://localhost:8081/v3/api-docs
+#      - name: notification-service
+#        url: http://localhost:8092/v3/api-docs
+#      - name: patient-service
+#        url: http://localhost:8086/v3/api-docs
+#      - name: pharmacy-service
+#        url: http://localhost:8084/v3/api-docs
+#      - name: lab-service
+#        url: http://localhost:8087/v3/api-docs
+#      - name: prescription-service
+#        url: http://localhost:8083/v3/api-docs
+#      - name: billing-service
+#        url: http://localhost:8091/v3/api-docs
+##spring:
+##  application:
+##    name: api-gateway
+##
+##  cloud:
+##    gateway:
+##      server:
+##        webflux:
+##          routes:
+##
+##            # ================= USER SERVICE =================
+##            - id: USER-SERVICE
+##              uri: lb://USER-SERVICE
+##              predicates:
+##                - Path=/users/**,/auth/**,/v3/api-docs/user
+##              filters:
+##                - RewritePath=/v3/api-docs/user,/v3/api-docs
+##
+##
+##            # ================= NOTIFICATION SERVICE =================
+##            - id: NOTIFICATION-SERVICE
+##              uri: lb://NOTIFICATION-SERVICE
+##              predicates:
+##                - Path=/notifications/**,/v3/api-docs/notification
+##              filters:
+##                - RewritePath=/v3/api-docs/notification,/v3/api-docs
+##                -
+##            # ================= PATIENT SERVICE =================
+##            - id: PATIENT-SERVICE
+##              uri: lb://PATIENT-SERVICE
+##              predicates:
+##                - Path=/patient/**,/appointment/**,/doctor-slot/**,/v3/api-docs/patient
+##              filters:
+##                - RewritePath=/v3/api-docs/patient,/v3/api-docs
+##
+##            # ================= PHARMACY SERVICE =================
+##            - id: PHARMACY-SERVICE
+##              uri: lb://PHARMACY-SERVICE
+##              predicates:
+##                - Path=/medicines/**,/dispense/**,/v3/api-docs/pharmacy
+##              filters:
+##                - RewritePath=/v3/api-docs/pharmacy,/v3/api-docs
+##
+##            # ================= LAB SERVICE =================
+##            - id: LAB-SERVICE
+##              uri: lb://LAB-SERVICE
+##              predicates:
+##                - Path=/lab-tests/**,/v3/api-docs/lab
+##              filters:
+##                - RewritePath=/v3/api-docs/lab,/v3/api-docs
+##
+##            # ================= PRESCRIPTION SERVICE =================
+##            - id: PRESCRIPTION-SERVICE
+##              uri: lb://PRESCRIPTION-SERVICE
+##              predicates:
+##                - Path=/doctors/**,/prescriptions/**,/v3/api-docs/prescription
+##              filters:
+##                - RewritePath=/v3/api-docs/prescription,/v3/api-docs
+##
+##            # ================= BILLING SERVICE =================
+##            - id: BILLING-SERVICE
+##              uri: lb://BILLING-SERVICE
+##              predicates:
+##                - Path=/invoice/**,/mediclaim/**,/payment/**,/v3/api-docs/billing
+##              filters:
+##                - RewritePath=/v3/api-docs/billing,/v3/api-docs
+##
+##eureka:
+##  client:
+##    register-with-eureka: true
+##    fetch-registry: true
+##    service-url:
+##      defaultZone: http://localhost:8761/eureka/
+##  instance:
+##    prefer-ip-address: true
+##
+##server:
+##  port: 8090
+##
+##management:
+##  endpoints:
+##    web:
+##      exposure:
+##        include: health
+##  endpoint:
+##    health:
+##      show-details: never
+##
+##jwt:
+##  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970cygsgcicgueknkehcigeigsikcgukgcaugkceskygcgcskchaku
+##
+##springdoc:
+##  api-docs:
+##    enabled: true
+##
+##  swagger-ui:
+##    path: /swagger-ui.html
+##    urls:
+##      - name: user-service
+##        url: /v3/api-docs/user
+##
+##      - name: notification-service
+##        url: /v3/api-docs/notification
+##
+##      - name: patient-service
+##        url: /v3/api-docs/patient
+##
+##      - name: pharmacy-service
+##        url: /v3/api-docs/pharmacy
+##
+##      - name: lab-service
+##        url: /v3/api-docs/lab
+##
+##      - name: prescription-service
+##        url: /v3/api-docs/prescription
+##
+##      - name: billing-service
+##        url: /v3/api-docs/billing
 spring:
   application:
     name: api-gateway
@@ -7,40 +214,82 @@ spring:
       server:
         webflux:
           routes:
-              - id: USER-SERVICE
-                uri: lb://USER-SERVICE
-                predicates:
-                  - Path=/users/**,/auth/**,/v3/api-docs/**
+            - id: USER-SERVICE
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/users/**,/auth/**
+            - id: USER-SERVICE-APIDOCS
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/v3/api-docs/user-service
+              filters:
+                - RewritePath=/v3/api-docs/user-service, /v3/api-docs
 
-              - id: NOTIFICATION-SERVICE
-                uri: lb://NOTIFICATION-SERVICE
-                predicates:
-                  - Path=/notifications/**,/v3/api-docs/**
+            - id: NOTIFICATION-SERVICE
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/notifications/**
+            - id: NOTIFICATION-SERVICE-APIDOCS
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/v3/api-docs/notification-service
+              filters:
+                - RewritePath=/v3/api-docs/notification-service,/v3/api-docs
 
-              - id: PATIENT-SERVICE
-                uri: lb://PATIENT-SERVICE
-                predicates:
-                  - Path=/patient/**,/appointment/**,/doctor-slot/**,/v3/api-docs/**
+            - id: PATIENT-SERVICE
+              uri: lb://PATIENT-SERVICE
+              predicates:
+                - Path=/patient/**,/appointment/**,/doctor-slot/**
+            - id: PATIENT-SERVICE-APIDOCS
+              uri: lb://PATIENT-SERVICE
+              predicates:
+                - Path=/v3/api-docs/patient-service
+              filters:
+                - RewritePath=/v3/api-docs/patient-service,/v3/api-docs
 
-              - id: PHARMACY-SERVICE
-                uri: lb://PHARMACY-SERVICE
-                predicates:
-                  - Path=/medicines/**,/dispense/**,/v3/api-docs/**
+            - id: PHARMACY-SERVICE
+              uri: lb://PHARMACY-SERVICE
+              predicates:
+                - Path=/medicines/**,/dispense/**
+            - id: PHARMACY-SERVICE-APIDOCS
+              uri: lb://PHARMACY-SERVICE
+              predicates:
+                - Path=/v3/api-docs/pharmacy-service
+              filters:
+                - RewritePath=/v3/api-docs/pharmacy-service,/v3/api-docs
 
-              - id: LAB-SERVICE
-                uri: lb://LAB-SERVICE
-                predicates:
-                  - Path=/lab-tests/**,/v3/api-docs/**
+            - id: LAB-SERVICE
+              uri: lb://LAB-SERVICE
+              predicates:
+                - Path=/lab-tests/**
+            - id: LAB-SERVICE-APIDOCS
+              uri: lb://LAB-SERVICE
+              predicates:
+                - Path=/v3/api-docs/lab-service
+              filters:
+                - RewritePath=/v3/api-docs/lab-service,/v3/api-docs
 
-              - id: PRESCRIPTION-SERVICE
-                uri: lb://PRESCRIPTION-SERVICE
-                predicates:
-                  - Path=/doctors/**,/prescriptions/**,/v3/api-docs/**
+            - id: PRESCRIPTION-SERVICE
+              uri: lb://PRESCRIPTION-SERVICE
+              predicates:
+                - Path=/doctors/**,/prescriptions/**
+            - id: PRESCRIPTION-SERVICE-APIDOCS
+              uri: lb://PRESCRIPTION-SERVICE
+              predicates:
+                - Path=/v3/api-docs/prescription-service
+              filters:
+                - RewritePath=/v3/api-docs/prescription-service,/v3/api-docs
 
-              - id: BILLING-SERVICE
-                uri: lb://BILLING-SERVICE
-                predicates:
-                  - Path=/invoice/**,/mediclaim/**,/payment/**,/v3/api-docs/**
+            - id: BILLING-SERVICE
+              uri: lb://BILLING-SERVICE
+              predicates:
+                - Path=/invoice/**,/mediclaim/**,/payment/**
+            - id: BILLING-SERVICE-APIDOCS
+              uri: lb://BILLING-SERVICE
+              predicates:
+                - Path=/v3/api-docs/billing-service
+              filters:
+                - RewritePath=/v3/api-docs/billing-service,/v3/api-docs
 
 eureka:
   client:
@@ -74,134 +323,16 @@ springdoc:
     path: /swagger-ui.html
     urls:
       - name: user-service
-        url: http://localhost:8081/v3/api-docs
+        url: /v3/api-docs/user-service
       - name: notification-service
-        url: http://localhost:8092/v3/api-docs
+        url: /v3/api-docs/notification-service
       - name: patient-service
-        url: http://localhost:8086/v3/api-docs
+        url: /v3/api-docs/patient-service
       - name: pharmacy-service
-        url: http://localhost:8084/v3/api-docs
+        url: /v3/api-docs/pharmacy-service
       - name: lab-service
-        url: http://localhost:8087/v3/api-docs
+        url: /v3/api-docs/lab-service
       - name: prescription-service
-        url: http://localhost:8083/v3/api-docs
+        url: /v3/api-docs/prescription-service
       - name: billing-service
-        url: http://localhost:8091/v3/api-docs
-#spring:
-#  application:
-#    name: api-gateway
-#
-#  cloud:
-#    gateway:
-#      server:
-#        webflux:
-#          routes:
-#
-#            # ================= USER SERVICE =================
-#            - id: USER-SERVICE
-#              uri: lb://USER-SERVICE
-#              predicates:
-#                - Path=/users/**,/auth/**,/v3/api-docs/user
-#              filters:
-#                - RewritePath=/v3/api-docs/user,/v3/api-docs
-#
-#
-#            # ================= NOTIFICATION SERVICE =================
-#            - id: NOTIFICATION-SERVICE
-#              uri: lb://NOTIFICATION-SERVICE
-#              predicates:
-#                - Path=/notifications/**,/v3/api-docs/notification
-#              filters:
-#                - RewritePath=/v3/api-docs/notification,/v3/api-docs
-#                -
-#            # ================= PATIENT SERVICE =================
-#            - id: PATIENT-SERVICE
-#              uri: lb://PATIENT-SERVICE
-#              predicates:
-#                - Path=/patient/**,/appointment/**,/doctor-slot/**,/v3/api-docs/patient
-#              filters:
-#                - RewritePath=/v3/api-docs/patient,/v3/api-docs
-#
-#            # ================= PHARMACY SERVICE =================
-#            - id: PHARMACY-SERVICE
-#              uri: lb://PHARMACY-SERVICE
-#              predicates:
-#                - Path=/medicines/**,/dispense/**,/v3/api-docs/pharmacy
-#              filters:
-#                - RewritePath=/v3/api-docs/pharmacy,/v3/api-docs
-#
-#            # ================= LAB SERVICE =================
-#            - id: LAB-SERVICE
-#              uri: lb://LAB-SERVICE
-#              predicates:
-#                - Path=/lab-tests/**,/v3/api-docs/lab
-#              filters:
-#                - RewritePath=/v3/api-docs/lab,/v3/api-docs
-#
-#            # ================= PRESCRIPTION SERVICE =================
-#            - id: PRESCRIPTION-SERVICE
-#              uri: lb://PRESCRIPTION-SERVICE
-#              predicates:
-#                - Path=/doctors/**,/prescriptions/**,/v3/api-docs/prescription
-#              filters:
-#                - RewritePath=/v3/api-docs/prescription,/v3/api-docs
-#
-#            # ================= BILLING SERVICE =================
-#            - id: BILLING-SERVICE
-#              uri: lb://BILLING-SERVICE
-#              predicates:
-#                - Path=/invoice/**,/mediclaim/**,/payment/**,/v3/api-docs/billing
-#              filters:
-#                - RewritePath=/v3/api-docs/billing,/v3/api-docs
-#
-#eureka:
-#  client:
-#    register-with-eureka: true
-#    fetch-registry: true
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka/
-#  instance:
-#    prefer-ip-address: true
-#
-#server:
-#  port: 8090
-#
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health
-#  endpoint:
-#    health:
-#      show-details: never
-#
-#jwt:
-#  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970cygsgcicgueknkehcigeigsikcgukgcaugkceskygcgcskchaku
-#
-#springdoc:
-#  api-docs:
-#    enabled: true
-#
-#  swagger-ui:
-#    path: /swagger-ui.html
-#    urls:
-#      - name: user-service
-#        url: /v3/api-docs/user
-#
-#      - name: notification-service
-#        url: /v3/api-docs/notification
-#
-#      - name: patient-service
-#        url: /v3/api-docs/patient
-#
-#      - name: pharmacy-service
-#        url: /v3/api-docs/pharmacy
-#
-#      - name: lab-service
-#        url: /v3/api-docs/lab
-#
-#      - name: prescription-service
-#        url: /v3/api-docs/prescription
-#
-#      - name: billing-service
-#        url: /v3/api-docs/billing
+        url: /v3/api-docs/billing-service
