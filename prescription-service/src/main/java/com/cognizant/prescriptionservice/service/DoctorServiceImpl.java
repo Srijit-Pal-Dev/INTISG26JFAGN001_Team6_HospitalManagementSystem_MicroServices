@@ -8,6 +8,7 @@ import com.cognizant.prescriptionservice.mapper.DoctorMapper;
 import com.cognizant.prescriptionservice.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class DoctorServiceImpl implements DoctorService {
 	private final DoctorRepository doctorRepository;
 
 	@Override
+	@Transactional
 	public DoctorResponse createDoctorProfile(DoctorProfileRequest request, Long userId) {
 		request.setUserId(userId);
 		Doctor newDoctor = DoctorMapper.toEntity(request);
@@ -24,6 +26,7 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 
 	@Override
+	@Transactional
 	public DoctorResponse getDoctorProfile(Long userId) {
 		Doctor doctor = doctorRepository
 			.findByUserId(userId)
@@ -33,6 +36,7 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 
 	@Override
+	@Transactional
 	public DoctorResponse updateDoctorProfile(Long userId, DoctorProfileRequest request) {
 		Doctor doctor = doctorRepository
 			.findByUserId(userId)
@@ -43,7 +47,8 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 
 	@Override
-    public DoctorResponse getDoctorById(Long doctorId) {
+	@Transactional
+	public DoctorResponse getDoctorById(Long doctorId) {
 		Doctor doctor = doctorRepository
 			.findById(doctorId)
 			.orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));

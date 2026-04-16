@@ -32,7 +32,7 @@ public class MedicineController {
 
 	@GetMapping
 	public List<MedicineResponse> getAllMedicines(@RequestHeader("X-User-Role") String role) {
-		if (!role.equalsIgnoreCase("PHARMACIST") && !role.equalsIgnoreCase("DOCTOR")) {
+		if (!role.contains("PHARMACIST") && !role.contains("DOCTOR") && !role.contains("ADMIN")) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid role");
 		}
 
@@ -44,7 +44,7 @@ public class MedicineController {
 		@RequestHeader("X-User-Role") String role,
 		@RequestBody MedicineRequest request
 	) {
-		if (!role.equalsIgnoreCase("PHARMACIST")) {
+		if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacist can add medicines");
 		}
 
@@ -56,7 +56,7 @@ public class MedicineController {
 		@RequestHeader("X-User-Role") String role,
 		@RequestParam String name
 	) {
-		if (!role.equalsIgnoreCase("DOCTOR")) {
+		if (!role.contains("DOCTOR") && !role.contains("ADMIN") && !role.contains("PHARMACIST")) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only doctor can search medicines");
 		}
 
@@ -65,7 +65,7 @@ public class MedicineController {
 
 	@GetMapping("/{id}")
 	public MedicineResponse getById(@RequestHeader("X-User-Role") String role, @PathVariable Long id) {
-		if (!role.equalsIgnoreCase("PHARMACIST") && !role.equalsIgnoreCase("DOCTOR")) {
+		if (!role.contains("DOCTOR") && !role.contains("ADMIN") && !role.contains("PHARMACIST")) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid role");
 		}
 
@@ -78,7 +78,7 @@ public class MedicineController {
 		@PathVariable Long id,
 		@RequestBody MedicineRequest request
 	) {
-		if (!role.equalsIgnoreCase("PHARMACIST")) {
+		if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacist can update medicine");
 		}
 
@@ -90,8 +90,14 @@ public class MedicineController {
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable("appointmentId") Long appointmentId
 	) {
-		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacist can update medicine");
+		if (
+			!roles.contains("DOCTOR") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("PHARMACIST") &&
+			!roles.contains("USER")
+		) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
 		}
 
 		return dispenseService.getMedicinesByAppointmentId(appointmentId);

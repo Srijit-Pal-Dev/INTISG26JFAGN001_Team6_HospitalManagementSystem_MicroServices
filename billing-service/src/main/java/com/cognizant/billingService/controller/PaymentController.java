@@ -20,7 +20,7 @@ public class PaymentController {
 		this.paymentService = paymentService;
 	}
 
-	@PostMapping("/initiate")
+	@PostMapping("/initiate/{invoiceId}")
 	public ResponseEntity<ApiResponse<PaymentDTO>> initiatePayment(
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long invoiceId
@@ -29,7 +29,7 @@ public class PaymentController {
 			!roles.contains("RECEPTIONIST") &&
 			!roles.contains("ADMIN") &&
 			!roles.contains("LAB_TECHNICIAN") &&
-			!roles.contains("PHARMICIST")
+			!roles.contains("PHARMACIST")
 		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
@@ -50,7 +50,7 @@ public class PaymentController {
 			!roles.contains("RECEPTIONIST") &&
 			!roles.contains("ADMIN") &&
 			!roles.contains("LAB_TECHNICIAN") &&
-			!roles.contains("PHARMICIST")
+			!roles.contains("PHARMACIST")
 		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
@@ -62,16 +62,17 @@ public class PaymentController {
 		}
 	}
 
-	@PutMapping("/complete")
+	@PutMapping("/complete/{paymentId}")
 	public ResponseEntity<ApiResponse<PaymentDTO>> completePayment(
 		@RequestHeader("X-User-Role") String roles,
+		@RequestHeader(value = "X-User-Id", required = false) Long userId,
 		@PathVariable Long paymentId,
 		@RequestParam PaymentMethod paymentMethod
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
-		PaymentDTO completePayment = paymentService.confirmPayment(paymentId, paymentMethod);
+		PaymentDTO completePayment = paymentService.confirmPayment(userId, paymentId, paymentMethod);
 		if (completePayment != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Payment Completed Successfully", completePayment));
 		} else {
@@ -79,7 +80,7 @@ public class PaymentController {
 		}
 	}
 
-	@PutMapping("/cancel")
+	@PutMapping("/cancel/{paymentId}")
 	public ResponseEntity<ApiResponse<PaymentDTO>> cancelPayment(
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long paymentId

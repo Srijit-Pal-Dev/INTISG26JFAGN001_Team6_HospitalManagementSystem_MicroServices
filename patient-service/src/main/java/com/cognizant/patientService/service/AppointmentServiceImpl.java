@@ -18,6 +18,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -47,6 +48,7 @@ public class AppointmentServiceImpl implements AppointmentService {
      it to the database, and sends a notification to the patient about the scheduled
      appointment. Finally, it returns the saved appointment as a DTO. */
 	@Override
+	@Transactional
 	public AppointmentDTO scheduleAppointment(AppointmentDTO appointmentDTO) {
 		Patient patient = patientRepository
 			.findById(appointmentDTO.getPatientId())
@@ -55,11 +57,31 @@ public class AppointmentServiceImpl implements AppointmentService {
 			.findById(appointmentDTO.getSlotId())
 			.orElseThrow(() -> new RuntimeException("Doctor slot with id " + appointmentDTO.getSlotId() + " not found")
 			);
-		if (!slot.isBooked()) {
-			throw new RuntimeException("Selected doctor slot is not available");
+
+		// Check if slot is already booked
+		if (slot.isBooked()) {
+			throw new RuntimeException(
+				"Doctor is already occupied at " +
+				slot.getSlotDate() +
+				" " +
+				slot.getSlotTime() +
+				". Please choose a different slot."
+			);
 		}
+
+		// Auto-populate date, time and doctorId from the slot
+		appointmentDTO.setDoctorId(slot.getDoctorId());
+		appointmentDTO.setAppointmentDate(slot.getSlotDate());
+		appointmentDTO.setAppointmentTime(slot.getSlotTime());
+		appointmentDTO.setStatus(Status.SCHEDULED);
+
 		Appointment appointment = AppointmentMapper.toEntity(appointmentDTO, patient);
 		Appointment savedAppointment = appointmentRepository.save(appointment);
+
+		// Mark slot as booked
+		slot.setBooked(true);
+		doctorSlotRepository.save(slot);
+
 		NotificationDTO notification = NotificationDTO
 			.builder()
 			.userId(patient.getUserId())
@@ -83,17 +105,51 @@ public class AppointmentServiceImpl implements AppointmentService {
      the updated appointment to the database, and sends a notification to the patient about
      the updated appointment. Finally, it returns the updated appointment as a DTO. */
 	@Override
+	@Transactional
 	public AppointmentDTO updateAppointment(Long id, AppointmentDTO appointmentDTO) {
 		Appointment appointment = appointmentRepository
 			.findById(id)
 			.orElseThrow(() -> new RuntimeException("Appointment with " + id + " not found"));
 
-		appointment.setDoctorId(appointmentDTO.getDoctorId());
-		appointment.setSlotId(appointmentDTO.getSlotId());
+		// If slot is being changed, free old slot and book new one
+		if (appointmentDTO.getSlotId() != null && !appointmentDTO.getSlotId().equals(appointment.getSlotId())) {
+			// Free old slot
+			if (appointment.getSlotId() != null) {
+				doctorSlotRepository
+					.findById(appointment.getSlotId())
+					.ifPresent(oldSlot -> {
+						oldSlot.setBooked(false);
+						doctorSlotRepository.save(oldSlot);
+					});
+			}
+			// Book new slot
+			DoctorSlot newSlot = doctorSlotRepository
+				.findById(appointmentDTO.getSlotId())
+				.orElseThrow(() ->
+					new RuntimeException("Doctor slot with id " + appointmentDTO.getSlotId() + " not found")
+				);
+			if (newSlot.isBooked()) {
+				throw new RuntimeException(
+					"Doctor is already occupied at " +
+					newSlot.getSlotDate() +
+					" " +
+					newSlot.getSlotTime() +
+					". Please choose a different slot."
+				);
+			}
+			newSlot.setBooked(true);
+			doctorSlotRepository.save(newSlot);
+
+			appointment.setSlotId(appointmentDTO.getSlotId());
+			appointment.setDoctorId(newSlot.getDoctorId());
+			appointment.setAppointmentDate(newSlot.getSlotDate());
+			appointment.setAppointmentTime(newSlot.getSlotTime());
+		}
+
 		appointment.setReason(appointmentDTO.getReason());
-		appointment.setStatus(appointmentDTO.getStatus());
-		appointment.setAppointmentDate(appointmentDTO.getAppointmentDate());
-		appointment.setAppointmentTime(appointmentDTO.getAppointmentTime());
+		if (appointmentDTO.getStatus() != null) {
+			appointment.setStatus(appointmentDTO.getStatus());
+		}
 
 		Appointment updated = appointmentRepository.save(appointment);
 		NotificationDTO notification = NotificationDTO
@@ -118,6 +174,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	/*this method retrieves an appointment by its ID. It checks if the appointment exists and returns
      its DTO. If the appointment is not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public AppointmentDTO getAppointmentById(Long id) {
 		Appointment appointment = appointmentRepository
 			.findById(id)
@@ -129,6 +186,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	/* this method retrieves an appointment by the patient ID. It checks if the appointment exists for the given
      patient ID and returns its DTO. If the appointment is not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public AppointmentDTO getAppointmentByPatientId(Long patientId) {
 		Appointment appointment = appointmentRepository
 			.findByPatientId(patientId)
@@ -140,6 +198,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	/* this method retrieves an appointment by the doctor ID. It checks if the appointment exists for the given
      doctor ID and returns its DTO. If the appointment is not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public AppointmentDTO getAppointmentByDoctorId(Long doctorId) {
 		Appointment appointment = appointmentRepository
 			.findByDoctorId(doctorId)
@@ -151,6 +210,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	/* this method retrieves an appointment by its status. It checks if the appointment exists for the given
      status and returns its DTO. If the appointment is not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public AppointmentDTO getAppointmentByStatus(Status status) {
 		Appointment appointment = appointmentRepository
 			.findByStatus(status)
@@ -162,6 +222,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	/* this method retrieves all appointments from the database, converts them
      to DTOs, and returns the list of appointment DTOs. */
 	@Override
+	@Transactional
 	public List<AppointmentDTO> getAllAppointments() {
 		List<Appointment> appointment = appointmentRepository.findAll();
 
@@ -171,11 +232,23 @@ public class AppointmentServiceImpl implements AppointmentService {
 	/* this method deletes an appointment by its ID. It first checks if the appointment exists, then deletes it from the database,
      and sends a notification to the patient about the cancellation. If the appointment is not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public void deleteAppointment(Long id) {
 		Appointment appointment = appointmentRepository
 			.findById(id)
 			.orElseThrow(() -> new RuntimeException("Appointment with " + id + " not found"));
 		Patient patient = appointment.getPatient();
+
+		// Free the slot so it can be booked again
+		if (appointment.getSlotId() != null) {
+			doctorSlotRepository
+				.findById(appointment.getSlotId())
+				.ifPresent(slot -> {
+					slot.setBooked(false);
+					doctorSlotRepository.save(slot);
+				});
+		}
+
 		appointmentRepository.deleteById(id);
 		NotificationDTO notification = NotificationDTO
 			.builder()
@@ -199,6 +272,7 @@ public class AppointmentServiceImpl implements AppointmentService {
       service to create an invoice for the appointment. Finally, it returns the completed appointment as a DTO. If the appointment is
       not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public AppointmentDTO completeAppointment(Long appointmentId) {
 		Appointment appointment = appointmentRepository
 			.findById(appointmentId)

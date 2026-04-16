@@ -10,7 +10,7 @@ public interface PaymentService {
 
 	PaymentDTO updatePayment(PaymentDTO paymentDTO);
 
-	PaymentDTO confirmPayment(Long paymentId, PaymentMethod method);
+	PaymentDTO confirmPayment(Long userId, Long paymentId, PaymentMethod method);
 
 	PaymentDTO getPaymentById(Long paymentId);
 

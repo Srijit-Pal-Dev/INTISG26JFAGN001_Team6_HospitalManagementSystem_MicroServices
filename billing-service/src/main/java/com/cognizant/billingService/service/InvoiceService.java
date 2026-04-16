@@ -19,4 +19,6 @@ public interface InvoiceService {
     List<InvoiceDTO> getAllInvoices();
 
     void deleteInvoice(Long id);
+
+    InvoiceDTO createPayemntForInvoice(Long invoiceId);
 }

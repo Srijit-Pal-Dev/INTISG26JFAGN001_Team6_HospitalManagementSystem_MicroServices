@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -39,6 +40,7 @@ public class PaymentServiceImpl implements PaymentService {
     it to the database, and sends a notification to the patient about the invoice being ready
     for payment. Finally, it returns the created payment as a DTO. */
 	@Override
+	@Transactional
 	public PaymentDTO initiatePayment(Long invoiceId) {
 		Invoice invoice = invoiceRepository
 			.findById(invoiceId)
@@ -56,7 +58,6 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setAppointmentId(invoice.getAppointmentId());
 		payment.setPatientId(invoice.getPatientId());
 		payment.setAmount(invoice.getTotalAmount());
-		payment.setPaymentMethod(invoice.getPayment().getPaymentMethod());
 		payment.setPaymentStatus(PaymentStatus.PENDING);
 
 		Payment saved = paymentRepository.save(payment);
@@ -81,6 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
     provided DTO, saves the updated payment to the database, and returns the updated payment
     as a DTO. */
 	@Override
+	@Transactional
 	public PaymentDTO updatePayment(PaymentDTO paymentDTO) {
 		Payment payment = paymentRepository
 			.findById(paymentDTO.getId())
@@ -99,7 +101,8 @@ public class PaymentServiceImpl implements PaymentService {
     It also sends a notification to the patient confirming the payment. Finally, it returns the
     confirmed payment as a DTO. */
 	@Override
-	public PaymentDTO confirmPayment(Long paymentId, PaymentMethod method) {
+	@Transactional
+	public PaymentDTO confirmPayment(Long userId, Long paymentId, PaymentMethod method) {
 		Payment payment = paymentRepository
 			.findById(paymentId)
 			.orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + paymentId));
@@ -112,6 +115,7 @@ public class PaymentServiceImpl implements PaymentService {
 		Payment updated = paymentRepository.save(payment);
 		NotificationDTO notification = NotificationDTO
 			.builder()
+			.userId(userId)
 			.title("Payment Confirmation")
 			.message("Your payment with transaction ID " + transactionId + " has been confirmed.")
 			.type(NotificationType.BILLING)
@@ -123,6 +127,7 @@ public class PaymentServiceImpl implements PaymentService {
 	/* this method retrieves a payment by its ID. It checks if the payment exists and returns
     its DTO. If the payment is not found, it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public PaymentDTO getPaymentById(Long paymentId) {
 		Payment payment = paymentRepository
 			.findById(paymentId)
@@ -134,6 +139,7 @@ public class PaymentServiceImpl implements PaymentService {
 	/* this method retrieves all payments from the database, converts them to DTOs, and
     returns the list of payment DTOs. */
 	@Override
+	@Transactional
 	public List<PaymentDTO> getAllPaymenta() {
 		List<Payment> payments = paymentRepository.findAll();
 		return payments.stream().map(PaymentMapper::toDTO).collect(Collectors.toList());
@@ -143,6 +149,7 @@ public class PaymentServiceImpl implements PaymentService {
     for the patient and returns a list of their DTOs. If no payments are found for the patient, it
     throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public List<PaymentDTO> getPaymentsByPatientId(Long patientId) {
 		List<Payment> payments = paymentRepository.findByPatientId(patientId);
 		return payments.stream().map(PaymentMapper::toDTO).collect(Collectors.toList());
@@ -152,6 +159,7 @@ public class PaymentServiceImpl implements PaymentService {
     exists for the given invoice and returns its DTO. If no payment is found for the invoice,
     it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public PaymentDTO getPaymentByInvoiceId(Long invoiceId) {
 		Payment payment = paymentRepository
 			.findByInvoiceId(invoiceId)
@@ -164,6 +172,7 @@ public class PaymentServiceImpl implements PaymentService {
     sends a notification to the patient about the cancellation. Finally, it returns the cancelled
     payment as a DTO. */
 	@Override
+	@Transactional
 	public PaymentDTO cancelPayment(Long paymentId) {
 		Payment payment = paymentRepository
 			.findById(paymentId)
@@ -172,6 +181,7 @@ public class PaymentServiceImpl implements PaymentService {
 		Payment cancel = paymentRepository.save(payment);
 		NotificationDTO notification = NotificationDTO
 			.builder()
+			.userId(cancel.getPatientId())
 			.title("Payment Cancellation")
 			.message("Your payment with transaction ID " + cancel.getTransactionId() + " has been cancelled.")
 			.type(NotificationType.BILLING)
@@ -184,6 +194,7 @@ public class PaymentServiceImpl implements PaymentService {
     exist with the given status and returns a list of their DTOs. If no payments are found
     with the specified status, it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public List<PaymentDTO> getPaymentsByStatus(PaymentStatus status) {
 		return paymentRepository
 			.findByPaymentStatus(status)

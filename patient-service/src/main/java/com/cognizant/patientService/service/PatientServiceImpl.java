@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PatientServiceImpl implements PatientService {
@@ -30,6 +31,7 @@ public class PatientServiceImpl implements PatientService {
     sends a notification to the user associated with the patient record, informing them that their patient record
     has been created. Finally, it returns the created patient record as a PatientDTO. */
 	@Override
+	@Transactional
 	public PatientDTO createPatient(PatientDTO patientDTO) {
 		Patient patient = PatientMapper.toEntity(patientDTO);
 
@@ -58,6 +60,7 @@ public class PatientServiceImpl implements PatientService {
     informing them that their patient record has been updated. If the patient is not found, it throws a
     ResourceNotFoundException. Finally, it returns the updated patient record as a PatientDTO. */
 	@Override
+	@Transactional
 	public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
 		Patient patient = patientRepository
 			.findById(id)
@@ -85,6 +88,7 @@ public class PatientServiceImpl implements PatientService {
 	/* this method retrieves a patient record by its ID. It checks if the patient exists in the database
     using the provided ID and returns its DTO. If the patient is not found, it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public PatientDTO getPatientById(Long id) {
 		Patient patient = patientRepository
 			.findById(id)
@@ -97,6 +101,7 @@ public class PatientServiceImpl implements PatientService {
     exists in the database using the MRN and returns its DTO. If the patient is not found, it throws a
     ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public PatientDTO getPatientByMrn(String mrn) {
 		Patient patient = patientRepository
 			.findPatientByMrn(mrn)
@@ -109,6 +114,7 @@ public class PatientServiceImpl implements PatientService {
     is empty and throws a ResourceNotFoundException if no patients are found. If patients are found,
     it converts each patient entity to a PatientDTO using the PatientMapper and returns the list of PatientDTOs. */
 	@Override
+	@Transactional
 	public List<PatientDTO> getAllPatient() {
 		List<Patient> patientList = patientRepository.findAll();
 		if (patientList.isEmpty()) {
@@ -122,6 +128,7 @@ public class PatientServiceImpl implements PatientService {
     the patient record, informing them that their patient record has been deleted. If the patient is
     not found, it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public void deletePatient(Long id) {
 		Patient patient = patientRepository
 			.findById(id)

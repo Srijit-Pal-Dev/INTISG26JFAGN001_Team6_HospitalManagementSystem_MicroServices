@@ -4,6 +4,8 @@ import com.cognizant.billingService.domain.PaymentMethod;
 import com.cognizant.billingService.domain.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 @NoArgsConstructor
@@ -24,5 +26,7 @@ public class PaymentDTO {
 	private PaymentStatus paymentStatus;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+
+	@JsonIgnore
 	private InvoiceDTO invoice;
 }

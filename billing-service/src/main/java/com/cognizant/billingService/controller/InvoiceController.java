@@ -34,12 +34,12 @@ public class InvoiceController {
 		}
 	}
 
-	@PutMapping("/update/medicine-fee/{appointmentId}/{medicineFee}")
+	@PutMapping("/update/medicine-fee/{appointmentId}")
 	public ResponseEntity<ApiResponse<InvoiceDTO>> updateMedicineFee(
 		@RequestHeader("X-User-Role") String roles,
-		@RequestHeader("X-User-Id") Long userId,
+		@RequestHeader(value = "X-User-Id", required = false) Long userId,
 		@PathVariable("appointmentId") Long appointmentId,
-		@PathVariable("medicineFee") BigDecimal medicineFee,
+		@RequestParam("medicineFee") BigDecimal medicineFee,
 		@RequestBody List<PharmacyDTO> medicines
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("PHARMACIST")) {
@@ -124,6 +124,24 @@ public class InvoiceController {
 			return ResponseEntity
 				.status(500)
 				.body(new ApiResponse<>(500, "An error occurred while deleting the invoice", null));
+		}
+	}
+
+	@PostMapping("/payment/{invoiceId}")
+	public ResponseEntity<ApiResponse<InvoiceDTO>> createPaymentForInvoice(
+		@RequestHeader("X-User-Role") String roles,
+		@PathVariable Long invoiceId
+	) {
+		if (!roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
+			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
+		}
+		InvoiceDTO updatedInvoice = invoiceService.createPayemntForInvoice(invoiceId);
+		if (updatedInvoice != null) {
+			return ResponseEntity.ok(new ApiResponse<>(200, "Payment Created Successfully", updatedInvoice));
+		} else {
+			return ResponseEntity
+				.status(400)
+				.body(new ApiResponse<>(400, "Failed to create payment for invoice", null));
 		}
 	}
 }

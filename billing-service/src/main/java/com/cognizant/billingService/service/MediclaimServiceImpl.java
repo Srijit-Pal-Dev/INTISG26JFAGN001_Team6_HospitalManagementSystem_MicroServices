@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MediclaimServiceImpl implements MediclaimService {
@@ -42,14 +43,15 @@ public class MediclaimServiceImpl implements MediclaimService {
     total and coverage percentage, saves the mediclaim, and sends a notification to the
     patient. */
 	@Override
+	@Transactional
 	public MediclaimDTO createMediclaim(MediclaimDTO mediclaimDTO) {
 		Payment payment = paymentRepository
 			.findById(mediclaimDTO.getPaymentId())
 			.orElseThrow(() ->
 				new ResourceNotFoundException("Payment with id " + mediclaimDTO.getPaymentId() + " not found")
 			);
-		if (!payment.getPaymentStatus().equals("PAID")) {
-			throw new IllegalStateException("Mediclaim can only be applied on PAID payments");
+		if (payment.getTransactionId() == null) {
+			throw new IllegalStateException("Mediclaim can only be applied on COMPLETED payments");
 		}
 
 		Invoice invoice = payment.getInvoice();
@@ -87,6 +89,7 @@ public class MediclaimServiceImpl implements MediclaimService {
     claim was approved or rejected. Finally, it saves the updated mediclaim and returns the
     updated DTO. */
 	@Override
+	@Transactional
 	public MediclaimDTO updateMediclaimStatus(Long id, MediclaimStatus status) {
 		Mediclaim mediclaim = mediclaimRepository
 			.findById(id)
@@ -129,6 +132,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 	/* this method retrieves a mediclaim by its ID. It checks if the mediclaim exists and
     returns its DTO. If the mediclaim is not found, it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public MediclaimDTO getMediclaimById(Long id) {
 		Mediclaim mediclaim = mediclaimRepository
 			.findById(id)
@@ -140,6 +144,7 @@ public class MediclaimServiceImpl implements MediclaimService {
     exist for the patient and returns a list of their DTOs. If no mediclaims are found,
     it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public List<MediclaimDTO> getAllMediclaimsByPatientId(Long patientId) {
 		List<Mediclaim> mediclaims = mediclaimRepository.findByPatientId(patientId);
 		if (mediclaims.isEmpty()) {
@@ -151,6 +156,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 	/* this method retrieves all mediclaims in the system. It checks if any mediclaims exist and
     returns a list of their DTOs. If no mediclaims are found, it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public List<MediclaimDTO> getAllMediclaims() {
 		List<Mediclaim> mediclaims = mediclaimRepository.findAll();
 		if (mediclaims.isEmpty()) {
@@ -163,6 +169,7 @@ public class MediclaimServiceImpl implements MediclaimService {
     mediclaims exist with the given status and returns a list of their DTOs. If no mediclaims
     are found with the specified status, it throws a ResourceNotFoundException. */
 	@Override
+	@Transactional
 	public List<MediclaimDTO> getMediclaimsByStatus(MediclaimStatus status) {
 		List<Mediclaim> mediclaims = mediclaimRepository.findByStatus(status);
 		if (mediclaims.isEmpty()) {

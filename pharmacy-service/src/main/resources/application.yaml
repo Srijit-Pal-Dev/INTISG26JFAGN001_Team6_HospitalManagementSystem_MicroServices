@@ -22,9 +22,6 @@ spring:
     config:
       enabled: false
 
-    openfeign:
-      circuitbreaker:
-        enabled: true
 
 resilience4j:
   circuitbreaker:
