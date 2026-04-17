@@ -6,23 +6,27 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.List;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 @Getter
 @Setter
 public class CreateDispenseRequest {
 
-	@NotBlank(message = "Prescription Id is required")
+	@NotNull(message = "Prescription Id is required")
 	private Long prescriptionId;
 
-	@NotBlank(message = "Patient Id is required")
+	@NotNull(message = "Patient Id is required")
 	private Long patientId;
 
-	@NotBlank(message = "Patient Id is required")
+	@NotNull(message = "Appointment Id is required")
 	private Long appointmentId;
 
-	@NotBlank(message = "Provide the list of medicines to be dispensed")
+	@NotEmpty(message = "Provide the list of medicines to be dispensed")
+	@Valid
 	private List<MedicineItem> medicines;
 
 	public Long getPrescriptionId() {
@@ -64,10 +68,10 @@ public class CreateDispenseRequest {
 	@AllArgsConstructor
 	public static class MedicineItem {
 
-		@NotBlank(message = "Medicine Id is required")
+		@NotNull(message = "Medicine Id is required")
 		private Long medicineId;
 
-		@NotBlank(message = "Quantity is required")
+		@NotNull(message = "Quantity is required")
 		@Min(value = 1, message = "Quantity must be greater than 0")
 		private Integer quantity;
 

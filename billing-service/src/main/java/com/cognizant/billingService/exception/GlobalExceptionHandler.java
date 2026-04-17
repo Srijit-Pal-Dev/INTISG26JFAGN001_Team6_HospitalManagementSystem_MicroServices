@@ -44,10 +44,11 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+		ex.printStackTrace();
 		return new ResponseEntity<>(
 			new ErrorResponse(
 				HttpStatus.INTERNAL_SERVER_ERROR.value(),
-				"Unexpected error occurred",
+				"Unexpected error occurred: " + ex.getMessage(),
 				LocalDateTime.now()
 			),
 			HttpStatus.INTERNAL_SERVER_ERROR

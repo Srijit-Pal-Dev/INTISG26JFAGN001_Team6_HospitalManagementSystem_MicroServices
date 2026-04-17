@@ -30,7 +30,7 @@ public class LabController {
 			throw new InvalidRoleException("Invalid Role: Only users with DOCTOR role can create lab tests");
 		}
 		List<LabTestResponse> labTest = labTestService.createLabTests(request);
-		if (!labTest.isEmpty() && labTest != null) {
+		if (labTest != null && !labTest.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Lab tests created successfully", labTest));
 		} else {
 			return ResponseEntity.status(500).body(new ApiResponse<>(500, "Failed to create lab test", null));
@@ -47,7 +47,7 @@ public class LabController {
 			);
 		}
 		List<LabTestResponse> labTests = labTestService.getPendingLabTests();
-		if (!labTests.isEmpty() && labTests != null) {
+		if (labTests != null && !labTests.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Pending lab tests fetched successfully", labTests));
 		} else {
 			return ResponseEntity.status(404).body(new ApiResponse<>(404, "No pending lab tests found", null));
@@ -136,7 +136,7 @@ public class LabController {
 			throw new InvalidRoleException("Invalid Role: Only users with PATIENT role can view their lab results");
 		}
 		List<LabResultResponse> responses = labTestService.getResultsByPatientId(patientId);
-		if (!responses.isEmpty() && responses != null) {
+		if (responses != null && !responses.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Lab results fetched successfully for patient", responses));
 		} else {
 			return ResponseEntity
@@ -150,13 +150,13 @@ public class LabController {
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long appointmentId
 	) {
-		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST")) {
+		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST") && !roles.contains("LAB_TECHNICIAN") && !roles.contains("USER")) {
 			throw new InvalidRoleException(
 				"Invalid Role: Only users with DOCTOR or RECEPTIONIST role can view lab tests for an appointment"
 			);
 		}
 		List<LabTestResponse> responses = labTestService.getLabTestsByAppointmentId(appointmentId);
-		if (!responses.isEmpty() && responses != null) {
+		if (responses != null && !responses.isEmpty()) {
 			return ResponseEntity.ok(
 				new ApiResponse<>(200, "Lab tests fetched successfully for appointment", responses)
 			);

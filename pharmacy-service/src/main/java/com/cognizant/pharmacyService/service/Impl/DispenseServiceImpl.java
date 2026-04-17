@@ -1,26 +1,25 @@
 package com.cognizant.pharmacyService.service.Impl;
 
-import com.cognizant.pharmacyService.client.BillingClient.PharmacyDTO;
 import com.cognizant.pharmacyService.client.BillingClient;
-import com.cognizant.pharmacyService.client.NotificationClient.SendNotificationRequest;
+import com.cognizant.pharmacyService.client.BillingClient.PharmacyDTO;
 import com.cognizant.pharmacyService.client.NotificationClient;
+import com.cognizant.pharmacyService.client.NotificationClient.SendNotificationRequest;
 import com.cognizant.pharmacyService.domain.DispenseRequest;
 import com.cognizant.pharmacyService.domain.DispenseStatus;
 import com.cognizant.pharmacyService.domain.Medicine;
 import com.cognizant.pharmacyService.dto.CreateDispenseRequest;
+import com.cognizant.pharmacyService.dto.CreateDispenseRequest.MedicineItem;
 import com.cognizant.pharmacyService.dto.DispenseRequestResponse;
 import com.cognizant.pharmacyService.repository.DispenseRequestRepository;
 import com.cognizant.pharmacyService.repository.MedicineRepository;
 import com.cognizant.pharmacyService.service.DispenseService;
-import com.cognizant.pharmacyService.dto.CreateDispenseRequest.MedicineItem;
-import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 public class DispenseServiceImpl implements DispenseService {
 
 	private final DispenseRequestRepository dispenseRequestRepository;
@@ -28,8 +27,12 @@ public class DispenseServiceImpl implements DispenseService {
 	private final BillingClient billingClient;
 	private final NotificationClient notificationClient;
 
-	public DispenseServiceImpl(DispenseRequestRepository dispenseRequestRepository,
-			MedicineRepository medicineRepository, BillingClient billingClient, NotificationClient notificationClient) {
+	public DispenseServiceImpl(
+		DispenseRequestRepository dispenseRequestRepository,
+		MedicineRepository medicineRepository,
+		BillingClient billingClient,
+		NotificationClient notificationClient
+	) {
 		this.dispenseRequestRepository = dispenseRequestRepository;
 		this.medicineRepository = medicineRepository;
 		this.billingClient = billingClient;
@@ -37,12 +40,12 @@ public class DispenseServiceImpl implements DispenseService {
 	}
 
 	@Override
+	@Transactional
 	public void createDispenseRequest(CreateDispenseRequest dto) {
-
 		for (MedicineItem item : dto.getMedicines()) {
-
-			Medicine medicine = medicineRepository.findById(item.getMedicineId())
-					.orElseThrow(() -> new RuntimeException("Medicine not found: " + item.getMedicineId()));
+			Medicine medicine = medicineRepository
+				.findById(item.getMedicineId())
+				.orElseThrow(() -> new RuntimeException("Medicine not found: " + item.getMedicineId()));
 
 			if (medicine.getStockQuantity() < item.getQuantity()) {
 				throw new RuntimeException("Insufficient stock for medicine: " + medicine.getName());
@@ -67,9 +70,13 @@ public class DispenseServiceImpl implements DispenseService {
 	}
 
 	@Override
+	@Transactional
 	public List<DispenseRequestResponse> getPendingRequests() {
-		return dispenseRequestRepository.findByStatus(DispenseStatus.PENDING).stream().map(this::mapToResponse)
-				.toList();
+		return dispenseRequestRepository
+			.findByStatus(DispenseStatus.PENDING)
+			.stream()
+			.map(this::mapToResponse)
+			.toList();
 	}
 
 	private DispenseRequestResponse mapToResponse(DispenseRequest entity) {
@@ -84,17 +91,18 @@ public class DispenseServiceImpl implements DispenseService {
 
 	@Override
 	@Transactional
-	public void dispense(Long id) {
-
-		DispenseRequest request = dispenseRequestRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Dispense request not found"));
+	public DispenseRequestResponse dispense(Long id) {
+		DispenseRequest request = dispenseRequestRepository
+			.findById(id)
+			.orElseThrow(() -> new RuntimeException("Dispense request not found"));
 
 		if (request.getStatus() == DispenseStatus.DISPENSED) {
 			throw new RuntimeException("Medicine already dispensed");
 		}
 
-		Medicine medicine = medicineRepository.findById(request.getMedicineId())
-				.orElseThrow(() -> new RuntimeException("Medicine not found"));
+		Medicine medicine = medicineRepository
+			.findById(request.getMedicineId())
+			.orElseThrow(() -> new RuntimeException("Medicine not found"));
 
 		if (medicine.getStockQuantity() < request.getQuantity()) {
 			throw new RuntimeException("Insufficient stock for medicine");
@@ -108,21 +116,25 @@ public class DispenseServiceImpl implements DispenseService {
 		medicineRepository.save(medicine);
 		dispenseRequestRepository.save(request);
 
-		BillingClient.PharmacyDTO pharmacyDTO = new BillingClient.PharmacyDTO();
-		pharmacyDTO.setMedicineId(medicine.getId());
-		pharmacyDTO.setMedicineName(medicine.getName());
-		pharmacyDTO.setQuantity(request.getQuantity());
-		pharmacyDTO.setUnitPrice(medicine.getPricePerUnit());
-		pharmacyDTO.setTotalPrice(request.getTotalPrice());
-
-		List<BillingClient.PharmacyDTO> medicines = List.of(pharmacyDTO);
-
-		try {
-			billingClient.updateMedicineFee("PHARMACIST", request.getAppointmentId(), request.getTotalPrice(),
-					medicines);
-		} catch (Exception ex) {
-			System.out.println("Billing service unavailable, skipping update");
+		// Compute cumulative medicine fee for entire appointment (same pattern as lab-service)
+		Long appointmentId = request.getAppointmentId();
+		List<PharmacyDTO> allDispensedMedicines = getMedicinesByAppointmentId(appointmentId);
+		BigDecimal totalMedicineFee = dispenseRequestRepository.calculateTotalMedicineFee(appointmentId);
+		if (totalMedicineFee == null) {
+			totalMedicineFee = BigDecimal.ZERO;
 		}
+
+		System.out.println(
+			">>> Calling billing: appointmentId=" +
+			appointmentId +
+			", totalMedicineFee=" +
+			totalMedicineFee +
+			", medicineCount=" +
+			allDispensedMedicines.size()
+		);
+
+		// Call billing service directly (no try-catch) — matches lab-service pattern
+		billingClient.updateMedicineFee("PHARMACIST", appointmentId, totalMedicineFee, allDispensedMedicines);
 
 		try {
 			SendNotificationRequest notification = new SendNotificationRequest();
@@ -130,25 +142,42 @@ public class DispenseServiceImpl implements DispenseService {
 			notification.setTitle("Medicines Ready");
 			notification.setMessage("Your medicines have been dispensed");
 			notification.setType(NotificationClient.NotificationType.GENERAL);
-
 			notificationClient.send(notification);
 		} catch (Exception ex) {
 			System.out.println("Notification service unavailable, skipping notification");
 		}
+
+		DispenseRequestResponse response = new DispenseRequestResponse();
+		response.setId(request.getId());
+		response.setPrescriptionId(request.getPrescriptionId());
+		response.setPatientId(request.getPatientId());
+		response.setAppointmentId(request.getAppointmentId());
+		response.setMedicineId(request.getMedicineId());
+		response.setMedicineName(request.getMedicineName());
+		response.setQuantity(request.getQuantity());
+		response.setUnitPrice(request.getUnitPrice());
+		response.setTotalPrice(request.getTotalPrice());
+		response.setStatus(request.getStatus().name());
+		response.setDispensedAt(request.getDispensedAt());
+		response.setCreatedAt(request.getCreatedAt());
+		return response;
 	}
 
 	@Override
+	@Transactional
 	public List<PharmacyDTO> getMedicinesByAppointmentId(Long appointmentId) {
-
-		return dispenseRequestRepository.findByAppointmentIdAndStatus(appointmentId, DispenseStatus.DISPENSED).stream()
-				.map(request -> {
-					PharmacyDTO dto = new PharmacyDTO();
-					dto.setMedicineId(request.getMedicineId());
-					dto.setMedicineName(request.getMedicineName());
-					dto.setQuantity(request.getQuantity());
-					dto.setUnitPrice(request.getUnitPrice());
-					dto.setTotalPrice(request.getTotalPrice());
-					return dto;
-				}).toList();
+		return dispenseRequestRepository
+			.findByAppointmentIdAndStatus(appointmentId, DispenseStatus.DISPENSED)
+			.stream()
+			.map(request -> {
+				PharmacyDTO dto = new PharmacyDTO();
+				dto.setMedicineId(request.getMedicineId());
+				dto.setMedicineName(request.getMedicineName());
+				dto.setQuantity(request.getQuantity());
+				dto.setUnitPrice(request.getUnitPrice());
+				dto.setTotalPrice(request.getTotalPrice());
+				return dto;
+			})
+			.toList();
 	}
 }

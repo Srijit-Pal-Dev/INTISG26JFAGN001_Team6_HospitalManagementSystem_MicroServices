@@ -4,14 +4,10 @@ import com.cognizant.prescriptionservice.dto.CreatePrescriptionRequest;
 import com.cognizant.prescriptionservice.dto.PrescriptionResponse;
 
 public interface PrescriptionService {
+	// ✅ THIS METHOD MUST EXIST
+	PrescriptionResponse createPrescription(Long userId, CreatePrescriptionRequest request);
 
-    // ✅ THIS METHOD MUST EXIST
-    PrescriptionResponse createPrescription(
-            Long doctorUserId,
-            CreatePrescriptionRequest request
-    );
+	PrescriptionResponse getPrescriptionById(Long id);
 
-    PrescriptionResponse getPrescriptionById(Long id);
-
-    PrescriptionResponse getPrescriptionByAppointmentId(Long appointmentId);
+	PrescriptionResponse getPrescriptionByAppointmentId(Long appointmentId);
 }

@@ -17,47 +17,53 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PrescriptionServiceImpl implements PrescriptionService {
 
-    private final PrescriptionRepository prescriptionRepository;
-    private final DoctorRepository doctorRepository;
+	private final PrescriptionRepository prescriptionRepository;
+	private final DoctorRepository doctorRepository;
 
-    @Override
-    public PrescriptionResponse createPrescription(
-            Long doctorUserId,
-            CreatePrescriptionRequest request
-    ) {
-        Doctor doctor = doctorRepository.findByUserId(doctorUserId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Doctor profile not found"));
+	@Override
+	@Transactional
+	public PrescriptionResponse createPrescription(Long userId, CreatePrescriptionRequest request) {
+		System.out.println(">>> createPrescription called with userId=" + userId);
 
-        Prescription prescription =
-                PrescriptionMapper.toEntity(request, doctor);
+		Doctor doctor = doctorRepository
+			.findByUserId(userId)
+			.orElseGet(() -> {
+				System.out.println(">>> Doctor not found by userId=" + userId + ", trying findById...");
+				return doctorRepository
+					.findById(userId)
+					.orElseThrow(() ->
+						new ResourceNotFoundException(
+							"Doctor profile not found for userId=" +
+							userId +
+							". Ensure the doctor has created their profile via /doctors/profile/create"
+						)
+					);
+			});
 
-        Prescription saved = prescriptionRepository.save(prescription);
+		Prescription prescription = PrescriptionMapper.toEntity(request, doctor);
 
-        return PrescriptionMapper.toResponse(saved);
-    }
+		Prescription saved = prescriptionRepository.save(prescription);
 
-    @Override
-    @Transactional(readOnly = true)
-    public PrescriptionResponse getPrescriptionById(Long id) {
+		return PrescriptionMapper.toResponse(saved);
+	}
 
-        Prescription prescription = prescriptionRepository.findDetailedById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Prescription not found"));
+	@Override
+	@Transactional(readOnly = true)
+	public PrescriptionResponse getPrescriptionById(Long id) {
+		Prescription prescription = prescriptionRepository
+			.findDetailedById(id)
+			.orElseThrow(() -> new ResourceNotFoundException("Prescription not found"));
 
-        return PrescriptionMapper.toResponse(prescription);
-    }
+		return PrescriptionMapper.toResponse(prescription);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public PrescriptionResponse getPrescriptionByAppointmentId(Long appointmentId) {
+	@Override
+	@Transactional(readOnly = true)
+	public PrescriptionResponse getPrescriptionByAppointmentId(Long appointmentId) {
+		Prescription prescription = prescriptionRepository
+			.findByAppointmentId(appointmentId)
+			.orElseThrow(() -> new ResourceNotFoundException("Prescription not found for appointment"));
 
-        Prescription prescription = prescriptionRepository
-                .findByAppointmentId(appointmentId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Prescription not found for appointment"));
-
-        return PrescriptionMapper.toResponse(prescription);
-    }
+		return PrescriptionMapper.toResponse(prescription);
+	}
 }

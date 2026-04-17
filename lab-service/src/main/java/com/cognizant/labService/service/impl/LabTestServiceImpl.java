@@ -17,8 +17,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class LabTestServiceImpl implements LabTestService {
@@ -45,6 +47,7 @@ public class LabTestServiceImpl implements LabTestService {
 
 	// CREATE LAB TEST
 	@Override
+	@Transactional
 	public List<LabTestResponse> createLabTests(CreateLabTestRequest request) {
 		List<LabTest> savedTests = new ArrayList<>();
 		BigDecimal totalFee = BigDecimal.ZERO;
@@ -94,6 +97,7 @@ public class LabTestServiceImpl implements LabTestService {
 
 	// READ PENDING LAB TESTS
 	@Override
+	@Transactional
 	public List<LabTestResponse> getPendingLabTests() {
 		List<LabTestResponse> result = labTestRepository
 			.findByStatus(LabTestStatus.PENDING)
@@ -105,6 +109,7 @@ public class LabTestServiceImpl implements LabTestService {
 
 	// UPDATE LAB TEST STATUS - SAMPLE COLLECTED
 	@Override
+	@Transactional
 	public LabTestResponse collectSample(Long labTestId) {
 		LabTest test = getLabTestOrThrow(labTestId);
 		test.setStatus(LabTestStatus.SAMPLE_COLLECTED);
@@ -122,6 +127,7 @@ public class LabTestServiceImpl implements LabTestService {
 
 	// UPDATE LAB TEST STATUS - IN PROGRESS
 	@Override
+	@Transactional
 	public LabTestResponse startTest(Long labTestId, String assignedTo) {
 		LabTest test = getLabTestOrThrow(labTestId);
 		test.setStatus(LabTestStatus.IN_PROGRESS);
@@ -140,6 +146,7 @@ public class LabTestServiceImpl implements LabTestService {
 
 	// UPLOAD LAB RESULT
 	@Override
+	@Transactional
 	public LabResultResponse uploadResult(Long labTestId, LabResultResponse resultDto) {
 		LabTest labTest = getLabTestOrThrow(labTestId); // ensure test exists before creating result
 
@@ -170,6 +177,7 @@ public class LabTestServiceImpl implements LabTestService {
 
 	// GET LAB RESULTS BY TEST ID
 	@Override
+	@Transactional
 	public LabResultResponse getResultsByLabTestId(Long labTestId) {
 		getLabTestOrThrow(labTestId); // ensure test exists
 		LabResult result = labResultRepository.findByLabTestId(labTestId);
@@ -178,6 +186,7 @@ public class LabTestServiceImpl implements LabTestService {
 
 	// GET LAB RESULTS BY PATIENT ID
 	@Override
+	@Transactional
 	public List<LabResultResponse> getResultsByPatientId(Long patientId) {
 		List<LabTest> tests = labTestRepository.findByPatientId(patientId);
 		if (tests.isEmpty()) {
@@ -192,6 +201,7 @@ public class LabTestServiceImpl implements LabTestService {
 	}
 
 	@Override
+	@Transactional
 	public List<LabTestResponse> getLabTestsByAppointmentId(Long appointmentId) {
 		List<LabTest> tests = labTestRepository.findByAppointmentId(appointmentId);
 		if (tests.isEmpty()) {
@@ -201,6 +211,7 @@ public class LabTestServiceImpl implements LabTestService {
 	}
 
 	// PRIVATE HELPER
+	@Transactional
 	private LabTest getLabTestOrThrow(Long id) {
 		return labTestRepository.findById(id).orElseThrow(() -> new LabTestNotFoundException(id));
 		//        private LabResult getLabResultOrThrow(Long id){
@@ -221,7 +232,7 @@ public class LabTestServiceImpl implements LabTestService {
 	}
 
 	@CircuitBreaker(name = "billingServiceCB", fallbackMethod = "initiateInvoiceFallback")
-	private InvoiceUpdateResponse createInvoice(
+	private Map<String, Object> createInvoice(
 		Long appointmentId,
 		BigDecimal labFee,
 		List<LabTestResponse> labTestResponses
@@ -229,7 +240,12 @@ public class LabTestServiceImpl implements LabTestService {
 		return billingClient.updateLabFee("ADMIN", appointmentId, labFee, labTestResponses);
 	}
 
-	private InvoiceUpdateResponse initiateInvoiceFallback(Long patientId, Long appointmentId, Throwable t) {
+	private Map<String, Object> initiateInvoiceFallback(
+		Long appointmentId,
+		BigDecimal labFee,
+		List<LabTestResponse> labTestResponses,
+		Throwable t
+	) {
 		System.err.println("Circuit breaker fallback triggered for billing service: " + t.getMessage());
 		return null;
 	}

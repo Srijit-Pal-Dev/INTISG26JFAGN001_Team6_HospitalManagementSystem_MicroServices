@@ -38,7 +38,7 @@ public class DoctorController {
 		@RequestHeader("X-User-Id") Long userId,
 		@Valid @RequestBody DoctorProfileRequest request
 	) {
-		if (!"DOCTOR".equalsIgnoreCase(role) && !"ADMIN".equalsIgnoreCase(role)) {
+		if (!role.contains("DOCTOR") && !role.contains("ADMIN")) {
 			throw new RuntimeException("Access denied: only DOCTOR role allowed");
 		}
 		return doctorService.createDoctorProfile(request, userId);
@@ -47,13 +47,7 @@ public class DoctorController {
 	@GetMapping("/profile/{userId}")
 	public DoctorResponse getDoctorProfile(@RequestHeader("X-User-Role") String role, @PathVariable Long userId) {
 		// optional validation
-		if (
-			!"DOCTOR".equalsIgnoreCase(role) &&
-			!"ADMIN".equalsIgnoreCase(role) &&
-			!"PATIENT".equalsIgnoreCase(role) &&
-			!"PHARMACIST".equalsIgnoreCase(role) &&
-			!"LAB_TECHNICIAN".equalsIgnoreCase(role)
-		) {
+		if (!role.contains("ADMIN") && !role.contains("RECEPTIONIST") && !role.contains("USER")) {
 			throw new RuntimeException("Access denied: only Hospitals role allowed");
 		}
 		return doctorService.getDoctorProfile(userId);
@@ -68,39 +62,10 @@ public class DoctorController {
 		@PathVariable Long userId,
 		@Valid @RequestBody DoctorProfileRequest request
 	) {
-		if (!"DOCTOR".equalsIgnoreCase(role)) {
+		if (!role.contains("DOCTOR") && !role.contains("ADMIN")) {
 			throw new RuntimeException("Access denied: only DOCTOR role allowed");
 		}
 		return doctorService.updateDoctorProfile(userId, request);
-	}
-
-	@PostMapping("/slot/create")
-	public ResponseEntity<String> createSlot(
-		@RequestHeader("X-User-Role") String role,
-		@RequestBody DoctorSlotRequest slot
-	) {
-		if (!"DOCTOR".equalsIgnoreCase(role)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only DOCTOR can create slots");
-		}
-
-		doctorSlotService.addDoctorSlots(List.of(slot));
-		return ResponseEntity.status(HttpStatus.CREATED).body("Doctor slot created successfully");
-	}
-
-	/**
-	 * CREATE MANY SLOTS
-	 */
-	@PostMapping("/slot/create-many")
-	public ResponseEntity<String> createManySlots(
-		@RequestHeader("X-User-Role") String role,
-		@RequestBody List<DoctorSlotRequest> slots
-	) {
-		if (!"DOCTOR".equalsIgnoreCase(role)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only DOCTOR can create slots");
-		}
-
-		doctorSlotService.addDoctorSlots(slots);
-		return ResponseEntity.status(HttpStatus.CREATED).body("Doctor slots created successfully");
 	}
 
 	@GetMapping("/check/{doctorId}")
@@ -108,7 +73,12 @@ public class DoctorController {
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long doctorId
 	) {
-        if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("DOCTOR")) {
+		if (
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("DOCTOR") &&
+			!roles.contains("USER")
+		) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		DoctorResponse doctor = doctorService.getDoctorById(doctorId);

@@ -11,9 +11,11 @@ import com.cognizant.billingService.respository.InvoiceRepository;
 import com.cognizant.billingService.respository.PaymentRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class InvoiceServiceImpl implements InvoiceService {
@@ -50,15 +52,18 @@ public class InvoiceServiceImpl implements InvoiceService {
     are medicines or labs, otherwise READY. If READY, it also auto-creates a payment
     record and sends notification to patient. */
 	@Override
+	@Transactional
 	public InvoiceDTO initiateInvoice(Long patientId, Long appointmentId) {
-		System.out.println("Initiating invoice for patientId: " + patientId + ", appointmentId: " + appointmentId);
+		// Prevent duplicate invoices for the same appointment
+		if (invoiceRepository.existsByAppointmentId(appointmentId)) {
+			Invoice existing = invoiceRepository
+				.findFirstByAppointmentId(appointmentId)
+				.orElseThrow(() -> new RuntimeException("Invoice not found"));
+			return InvoiceMapper.toDTO(existing);
+		}
 		PatientDTO patient = getPatientInfo(patientId);
-		System.out.println("Patient : " + patient);
 		AppointmentDTO appointment = getAppointmentInfo(appointmentId);
-		System.out.println("Appointment : " + appointment);
 		DoctorDTO doctor = getDoctorInfo(appointment.getDoctorId());
-		System.out.println("Doctor : " + appointment.getDoctorId());
-		System.out.println(getNotification(1L));
 		Long count = invoiceRepository.count() + 1;
 		String generatedInvoice = "INV" + String.format("%05d", count);
 
@@ -68,28 +73,43 @@ public class InvoiceServiceImpl implements InvoiceService {
 		invoice.setAppointmentId(appointment.getId());
 		invoice.setConsultationFee(doctor.getConsultationFee());
 		invoice.setInvoiceNumber(generatedInvoice);
-		List<PharmacyDTO> medicines = getMedicinesByAppointmentId(appointmentId);
-		//List<LabDTO> labTests = getLabTestsByAppointmentId(appointmentId);
-		if ((medicines == null || medicines.isEmpty())) {
+		List<PharmacyDTO> medicines;
+		try {
+			String roles = "ADMIN,USER,RECEPTIONIST,PHARMACIST";
+			medicines = pharmacyClient.getMedicinesByAppointmentId(roles, appointmentId);
+		} catch (Exception e) {
+			medicines = Collections.emptyList();
+		}
+
+		List<LabDTO> labTests;
+		try {
+			String roles = "ADMIN,USER,RECEPTIONIST,LAB_TECHNICIAN";
+			labTests = labClient.getLabTestsByAppointmentId(roles, appointmentId).getData();
+		} catch (Exception e) {
+			labTests = Collections.emptyList();
+		}
+		if ((medicines == null || medicines.isEmpty()) && (labTests == null || labTests.isEmpty())) {
 			// No medicines or labs -> invoice is READY immediately
 			invoice.calculateTotalAmount();
 			invoice.setInvoiceStatus(InvoiceStatus.READY);
 			Invoice savedInvoice = invoiceRepository.save(invoice);
-			// Auto create payment record
-			createPaymentForInvoice(savedInvoice, patient.getId());
-			NotificationDTO notification = NotificationDTO
-				.builder()
-				.userId(patient.getId())
-				.title("Invoice Ready for Payment")
-				.message(
-					"Your invoice " +
-					savedInvoice.getInvoiceNumber() +
-					" is ready for payment. Total amount: " +
-					savedInvoice.getTotalAmount()
-				)
-				.type(NotificationType.BILLING)
-				.build();
-			createNotification(notification);
+			try {
+				NotificationDTO notification = NotificationDTO
+					.builder()
+					.userId(patient.getId())
+					.title("Invoice Ready for Payment")
+					.message(
+						"Your invoice " +
+						savedInvoice.getInvoiceNumber() +
+						" is ready for payment. Total amount: " +
+						savedInvoice.getTotalAmount()
+					)
+					.type(NotificationType.BILLING)
+					.build();
+				createNotification(notification);
+			} catch (Exception e) {
+				System.err.println("Notification failed: " + e.getMessage());
+			}
 			InvoiceDTO dto = InvoiceMapper.toDTO(savedInvoice);
 			dto.setPatient(patient);
 			dto.setDoctor(doctor);
@@ -113,37 +133,68 @@ public class InvoiceServiceImpl implements InvoiceService {
     status to READY, creates payment record and sends notification to patient. If lab
     fee is not yet updated, it keeps status as PENDING. */
 	@Override
+	@Transactional
 	public InvoiceDTO updateMedicineFee(
 		Long userId,
 		Long appointmentId,
 		BigDecimal medicineFee,
 		List<PharmacyDTO> medicines
 	) {
+		System.out.println("Received updateMedicineFee for appointmentId=" + appointmentId + ", fee=" + medicineFee);
 		Invoice invoice = invoiceRepository
-			.findById(appointmentId)
-			.orElseThrow(() -> new RuntimeException("Appointment with id " + appointmentId + " not found"));
+			.findFirstByAppointmentId(appointmentId)
+			.orElseThrow(() -> new RuntimeException("Invoice with id " + appointmentId + " not found"));
 
 		invoice.setMedicineFee(medicineFee);
-		//		List<LabDTO> labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
-		//		if (labTests == null || labTests.isEmpty()) {
-		if (true) {
-			invoice.setTotalAmount(invoice.calculateTotalAmount());
+
+		// Check if lab fee is already set on the invoice, OR if no lab tests exist
+		boolean labFeeReady = invoice.getLabFee() != null && invoice.getLabFee().compareTo(BigDecimal.ZERO) > 0;
+		boolean noLabTests = false;
+		if (!labFeeReady) {
+			List<LabDTO> labTests;
+			try {
+				labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
+			} catch (Exception e) {
+				System.err.println(
+					"Failed to fetch lab tests for appointmentId=" + invoice.getAppointmentId() + ": " + e.getMessage()
+				);
+				labTests = Collections.emptyList();
+			}
+			noLabTests = labTests == null || labTests.isEmpty();
+		}
+
+		if (labFeeReady || noLabTests) {
+			invoice.calculateTotalAmount();
 			invoice.setInvoiceStatus(InvoiceStatus.READY);
 			Invoice updatedInvoice = invoiceRepository.save(invoice);
-			createPaymentForInvoice(updatedInvoice, invoice.getPatientId());
-			NotificationDTO notification = NotificationDTO
-				.builder()
-				.userId(userId)
-				.title("Invoice Ready for Payment")
-				.message(
-					"Your invoice " +
-					invoice.getInvoiceNumber() +
-					" is ready for payment. Total amount: " +
-					invoice.getTotalAmount()
-				)
-				.type(NotificationType.BILLING)
-				.build();
-			createNotification(notification);
+			System.out.println(
+				"Invoice " +
+				updatedInvoice.getInvoiceNumber() +
+				" saved with medicineFee=" +
+				updatedInvoice.getMedicineFee() +
+				", status=" +
+				updatedInvoice.getInvoiceStatus()
+			);
+
+			try {
+				NotificationDTO notification = NotificationDTO
+					.builder()
+					.userId(userId)
+					.title("Invoice Ready for Payment")
+					.message(
+						"Your invoice " +
+						invoice.getInvoiceNumber() +
+						" is ready for payment. Total amount: " +
+						invoice.getTotalAmount()
+					)
+					.type(NotificationType.BILLING)
+					.build();
+				createNotification(notification);
+			} catch (Exception e) {
+				System.err.println(
+					"Notification failed for invoice " + updatedInvoice.getInvoiceNumber() + ": " + e.getMessage()
+				);
+			}
 			InvoiceDTO dto = InvoiceMapper.toDTO(updatedInvoice);
 			dto.setMedicines(medicines);
 			return dto;
@@ -159,31 +210,52 @@ public class InvoiceServiceImpl implements InvoiceService {
     payment record and sends notification to patient. If medicine fee is not yet updated,
     it keeps status as PENDING. */
 	@Override
+	@Transactional
 	public InvoiceDTO updateLabFee(Long appointmentId, BigDecimal labFee, List<LabDTO> labTests) {
 		Invoice invoice = invoiceRepository
-			.findById(appointmentId)
-			.orElseThrow(() -> new RuntimeException("Appointment with id " + appointmentId + " not found"));
+			.findFirstByAppointmentId(appointmentId)
+			.orElseThrow(() -> new RuntimeException("Invoice with id " + appointmentId + " not found"));
 
 		invoice.setLabFee(labFee);
-		List<PharmacyDTO> medicines = getMedicinesByAppointmentId(invoice.getAppointmentId());
-		if (medicines == null || medicines.isEmpty()) {
+
+		// Check if medicine fee is already set on the invoice, OR if no medicines exist
+		boolean medicineFeeReady =
+			invoice.getMedicineFee() != null && invoice.getMedicineFee().compareTo(BigDecimal.ZERO) > 0;
+		boolean noMedicines = false;
+		if (!medicineFeeReady) {
+			List<PharmacyDTO> medicines;
+			try {
+				medicines = getMedicinesByAppointmentId(invoice.getAppointmentId());
+			} catch (Exception e) {
+				System.err.println(
+					"Failed to fetch medicines for appointmentId=" + invoice.getAppointmentId() + ": " + e.getMessage()
+				);
+				medicines = Collections.emptyList();
+			}
+			noMedicines = medicines == null || medicines.isEmpty();
+		}
+
+		if (medicineFeeReady || noMedicines) {
 			invoice.calculateTotalAmount();
 			invoice.setInvoiceStatus(InvoiceStatus.READY);
 			Invoice updatedInvoice = invoiceRepository.save(invoice);
-			createPaymentForInvoice(updatedInvoice, invoice.getPatientId());
-			NotificationDTO notification = NotificationDTO
-				.builder()
-				.userId(invoice.getPatientId())
-				.title("Invoice Ready for Payment")
-				.message(
-					"Your invoice " +
-					invoice.getInvoiceNumber() +
-					" is ready for payment. Total amount: " +
-					invoice.getTotalAmount()
-				)
-				.type(NotificationType.BILLING)
-				.build();
-			createNotification(notification);
+			try {
+				NotificationDTO notification = NotificationDTO
+					.builder()
+					.userId(invoice.getPatientId())
+					.title("Invoice Ready for Payment")
+					.message(
+						"Your invoice " +
+						invoice.getInvoiceNumber() +
+						" is ready for payment. Total amount: " +
+						invoice.getTotalAmount()
+					)
+					.type(NotificationType.BILLING)
+					.build();
+				createNotification(notification);
+			} catch (Exception e) {
+				System.err.println("Notification failed: " + e.getMessage());
+			}
 			InvoiceDTO dto = InvoiceMapper.toDTO(updatedInvoice);
 			dto.setLabTests(labTests);
 			return dto;
@@ -198,6 +270,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     medicines and lab tests details. It then constructs a comprehensive InvoiceDTO with all
     the details and returns it. If invoice is not found, it throws an exception. */
 	@Override
+	@Transactional
 	public InvoiceDTO getInvoiceById(Long id) {
 		Invoice invoice = invoiceRepository
 			.findById(id)
@@ -223,6 +296,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     with all the details and returns the list of InvoiceDTOs. If no invoices are found, it
     returns an empty list. */
 	@Override
+	@Transactional
 	public List<InvoiceDTO> getAllInvoices() {
 		List<Invoice> invoices = invoiceRepository.findAll();
 		return invoices
@@ -249,6 +323,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     exists in the database. If it does, it deletes the invoice. If it does not exist, it
     throws an exception. */
 	@Override
+	@Transactional
 	public void deleteInvoice(Long id) {
 		Invoice invoice = invoiceRepository
 			.findById(id)
@@ -257,9 +332,20 @@ public class InvoiceServiceImpl implements InvoiceService {
 		invoiceRepository.deleteById(id);
 	}
 
+	@Override
+	@Transactional
+	public InvoiceDTO createPayemntForInvoice(Long invoiceId) {
+		Invoice invoice = invoiceRepository
+			.findById(invoiceId)
+			.orElseThrow(() -> new RuntimeException("Invoice with id " + invoiceId + " not found"));
+		createPaymentForInvoice(invoice, invoice.getPatientId());
+		return InvoiceMapper.toDTO(invoice);
+	}
+
 	/* this is a helper method to create a payment record for an invoice. It takes the invoice
     and patient id as input, creates a new payment record with the invoice details and saves it
     to the database. The payment status is set to PENDING initially. */
+	@Transactional
 	private void createPaymentForInvoice(Invoice invoice, Long patientId) {
 		Payment payment = new Payment();
 		payment.setInvoice(invoice);

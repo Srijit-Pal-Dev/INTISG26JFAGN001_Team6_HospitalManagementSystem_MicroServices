@@ -1,10 +1,11 @@
 package com.cognizant.pharmacyService.controller;
 
-import java.util.List;
 import com.cognizant.pharmacyService.dto.CreateDispenseRequest;
 import com.cognizant.pharmacyService.dto.DispenseRequestResponse;
 import com.cognizant.pharmacyService.service.DispenseService;
+import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,53 +20,49 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/dispense")
 public class DispenseController {
 
-    private final DispenseService dispenseService;
+	private final DispenseService dispenseService;
 
-    public DispenseController(DispenseService dispenseService) {
-        this.dispenseService = dispenseService;
-    }
+	public DispenseController(DispenseService dispenseService) {
+		this.dispenseService = dispenseService;
+	}
 
-    @PostMapping("/create")
-    public void createDispenseRequest(
-            @RequestHeader("X-User-Role") String role,
-            @RequestBody CreateDispenseRequest request) {
+	@PostMapping
+	public ResponseEntity<String> createDispenseRequest(
+		@RequestHeader("X-User-Role") String role,
+		@RequestBody CreateDispenseRequest request
+	) {
+		if (!role.contains("DOCTOR") && !role.contains("ADMIN")) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only doctors can create dispense requests");
+		}
 
-        if (!"DOCTOR".equalsIgnoreCase(role)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Only doctors can create dispense requests"
-            );
-        }
+		dispenseService.createDispenseRequest(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body("Dispense request created successfully");
+	}
 
-        dispenseService.createDispenseRequest(request);
-    }
+	@GetMapping("/pending")
+	public ResponseEntity<List<DispenseRequestResponse>> getPendingDispenseRequests(
+		@RequestHeader("X-User-Role") String role
+	) {
+		if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
+			throw new ResponseStatusException(
+				HttpStatus.FORBIDDEN,
+				"Only pharmacists can view pending dispense requests"
+			);
+		}
 
-    @GetMapping("/pending")
-    public List<DispenseRequestResponse> getPendingDispenseRequests(
-            @RequestHeader("X-User-Role") String role) {
+		return ResponseEntity.ok(dispenseService.getPendingRequests());
+	}
 
-        if (!"PHARMACIST".equalsIgnoreCase(role)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Only pharmacists can view pending dispense requests"
-            );
-        }
+	@PutMapping("/{id}")
+	public ResponseEntity<DispenseRequestResponse> dispenseMedicine(
+		@RequestHeader("X-User-Role") String role,
+		@PathVariable Long id
+	) {
+		if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacists can dispense medicines");
+		}
 
-        return dispenseService.getPendingRequests();
-    }
-
-    @PutMapping("/{id}")
-    public void dispenseMedicine(
-            @RequestHeader("X-User-Role") String role,
-            @PathVariable Long id) {
-
-        if (!"PHARMACIST".equalsIgnoreCase(role)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Only pharmacists can dispense medicines"
-            );
-        }
-
-        dispenseService.dispense(id);
-    }
+		DispenseRequestResponse response = dispenseService.dispense(id);
+		return ResponseEntity.ok(response);
+	}
 }

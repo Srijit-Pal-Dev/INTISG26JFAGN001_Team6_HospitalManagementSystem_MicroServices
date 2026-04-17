@@ -11,7 +11,7 @@ public interface DispenseService {
 
 	void createDispenseRequest(CreateDispenseRequest request);
 
-	void dispense(Long id);
+	DispenseRequestResponse dispense(Long id);
 
 	List<PharmacyDTO> getMedicinesByAppointmentId(Long appointmentId);
 }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DoctorSlotServiceImpl implements DoctorSlotService {
@@ -37,6 +38,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
     associated with the slot, informing them about the creation of the new slot. Finally, it returns the created slot
     as a DoctorSlotDTO. */
 	@Override
+	@Transactional
 	public DoctorSlotDTO createSlot(DoctorSlotDTO doctorSlotDTO, Long userId) {
 		Optional<DoctorSlot> existing = doctorSlotRepository.findByDoctorIdAndSlotDateAndSlotTime(
 			doctorSlotDTO.getDoctorId(),
@@ -77,6 +79,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
     database, and sends a notification to the user associated with the slot, informing them about the creation of the
     new slot. Finally, it returns a list of the created doctor slot DTOs. */
 	@Override
+	@Transactional
 	public List<DoctorSlotDTO> createManySlots(
 		Long doctorId,
 		LocalDate slotDate,
@@ -132,6 +135,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
     to the user associated with the slot, informing them about the update. Finally, it returns the updated slot
     as a DTO. If the slot is not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public DoctorSlotDTO updateSlot(Long id, DoctorSlotDTO doctorSlotDTO) {
 		DoctorSlot slot = doctorSlotRepository
 			.findById(id)
@@ -164,6 +168,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
 	/* this method retrieves a doctor slot by its ID. It checks if the slot exists and returns its DTO.
     If the slot is not found, it throws a RuntimeException. */
 	@Override
+	@Transactional
 	public DoctorSlotDTO getSlotById(Long id) {
 		DoctorSlot slot = doctorSlotRepository
 			.findById(id)
@@ -176,6 +181,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
     associated with the given doctor ID, converts each slot entity to a DTO using the DoctorSlotMapper, and returns
     the list of doctor slot DTOs. If no slots are found for the doctor, it will return an empty list. */
 	@Override
+	@Transactional
 	public List<DoctorSlotDTO> getSlotByDoctorId(Long id) {
 		List<DoctorSlot> slots = doctorSlotRepository.findByDoctorId(id);
 
@@ -185,6 +191,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
 	/* this method retrieves all doctor slots from the database, converts them to DTOs,
     and returns the list of doctor slot DTOs. */
 	@Override
+	@Transactional
 	public List<DoctorSlotDTO> getAllSlots() {
 		List<DoctorSlot> slots = doctorSlotRepository.findAll();
 		return slots.stream().map(DoctorSlotMapper::toDTO).collect(Collectors.toList());
@@ -195,6 +202,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
      to the user associated with the slot, informing them about the deletion. The notification includes details about the
      doctor, date, and time of the deleted slot. */
 	@Override
+	@Transactional
 	public void deleteSlot(Long id) {
 		DoctorSlot slot = doctorSlotRepository
 			.findById(id)

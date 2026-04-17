@@ -1,39 +1,43 @@
-//package com.cognizant.labService.config;
-//
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.security.config.Customizer;
-//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-//import org.springframework.security.web.SecurityFilterChain;
-//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-//
-//@Configuration
-//@EnableWebSecurity
-//public class SecurityConfig {
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                // Disable CSRF for H2 console
-//                .csrf(csrf -> csrf.disable())
-//
-//                // Allow H2 console to be displayed in frames
-//                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-//
-//                // Allow all requests (for now)
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(
-//                                "/h2-console/**",
-//                                "/lab-tests/**",
-//                                "/swagger-ui/**",
-//                                "/v3/api-docs/**"
-//                        ).permitAll()
-//                        .anyRequest().permitAll()
-//                )
-//
-//                // Disable default login page
-//                .httpBasic(Customizer.withDefaults());
-//
-//        return http.build();
-//    }
-//}
+package com.cognizant.labService.config;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenApiConfig {
+
+	@Value("${gateway.url:http://localhost:8090}")
+	private String gatewayUrl;
+
+	@Bean
+	public OpenAPI openAPI() {
+		return new OpenAPI()
+			.info(
+				new Info()
+					.title("Lab Service API")
+					.description("Hospital Management System — Lab Service")
+					.version("1.0.0")
+			)
+			.addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+			.components(
+				new Components()
+					.addSecuritySchemes(
+						"bearerAuth",
+						new SecurityScheme()
+							.type(SecurityScheme.Type.HTTP)
+							.scheme("bearer")
+							.name("Authorization")
+							.bearerFormat("JWT")
+					)
+			)
+			.servers(List.of(new Server().url(gatewayUrl).description("API GATEWAY")));
+	}
+}
