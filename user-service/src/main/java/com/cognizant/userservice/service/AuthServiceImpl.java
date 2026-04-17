@@ -11,7 +11,9 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.*;
@@ -80,14 +83,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @CircuitBreaker(name="myCircuitBreaker", fallbackMethod = "fallback")
+//    @CircuitBreaker(name="myCircuitBreaker", fallbackMethod = "fallback")
     public Map<String, String> login(LoginRequest request) {
+        
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+
+
 
         List<String> roles = authentication.getAuthorities()
                 .stream()
@@ -108,14 +114,6 @@ public class AuthServiceImpl implements AuthService {
                 .orElse("USER");
 
         SendNotificationRequest sendNotificationRequest = new SendNotificationRequest();
-
-        sendNotificationRequest.setUserId(user.getId());
-        sendNotificationRequest.setTitle("User Login");
-        sendNotificationRequest.setMessage(userRole+" "+user.getFullName()+" has logged in");
-        sendNotificationRequest.setType(NotificationType.GENERAL);
-
-        notificationClient.send(sendNotificationRequest);
-
 
         return Map.of(
                 "accessToken", accessToken,

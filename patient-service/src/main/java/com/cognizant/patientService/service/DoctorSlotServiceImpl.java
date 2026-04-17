@@ -56,7 +56,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
 		DoctorSlot saved = doctorSlotRepository.save(slot);
 		NotificationDTO notification = NotificationDTO
 			.builder()
-			.userId(saved.getUserId())
+			.userId(userId)
 			.title("Slot Created")
 			.message(
 				"A new slot has been created for doctor id " +
