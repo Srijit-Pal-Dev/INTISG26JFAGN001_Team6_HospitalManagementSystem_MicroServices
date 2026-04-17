@@ -53,7 +53,7 @@ public class PrescriptionMapper {
                     request.getLabTests().stream()
                             .map(t -> {
                                 PrescriptionLabTest plt = new PrescriptionLabTest();
-                                plt.setTestCode(t.getTestCode());
+//                                plt.setTestCode(t.getTestCode());
                                 plt.setTestName(t.getTestName());
                                 plt.setNotes(t.getNotes());
                                 plt.setPrescription(prescription);
@@ -97,7 +97,7 @@ public class PrescriptionMapper {
         response.setLabTests(
                 prescription.getLabTests().stream()
                         .map(l -> new PrescriptionLabTestRequest(
-                                l.getTestCode(),
+//                                l.getTestCode(),
                                 l.getTestName(),
                                 l.getNotes()
                         ))

@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 public class PrescriptionLabTestRequest {
 
-    private String testCode;
+//    private String testCode;
 
     @NotBlank
     private String testName;
