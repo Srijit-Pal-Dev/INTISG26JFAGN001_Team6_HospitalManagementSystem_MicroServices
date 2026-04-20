@@ -42,7 +42,7 @@ public class DoctorServiceImpl implements DoctorService {
 			.findByUserId(userId)
 			.orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-		DoctorMapper.toEntity(request);
+		DoctorMapper.updateEntity(request, doctor);
 		return DoctorMapper.toDTO(doctorRepository.save(doctor));
 	}
 

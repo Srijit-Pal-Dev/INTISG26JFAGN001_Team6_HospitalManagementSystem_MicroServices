@@ -12,6 +12,7 @@ public class DoctorSlotMapper {
 		return DoctorSlotDTO
 			.builder()
 			.id(doctorSlot.getId())
+			.userId(doctorSlot.getUserId())
 			.doctorId(doctorSlot.getDoctorId())
 			.slotDate(doctorSlot.getSlotDate())
 			.slotTime(doctorSlot.getSlotTime())

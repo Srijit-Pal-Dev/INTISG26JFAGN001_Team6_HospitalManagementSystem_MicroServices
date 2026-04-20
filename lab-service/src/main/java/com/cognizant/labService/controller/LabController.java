@@ -76,12 +76,13 @@ public class LabController {
 	public ResponseEntity<ApiResponse<LabTestResponse>> startTest(
 		@PathVariable Long id,
 		@RequestParam String assignedTo,
+		@RequestHeader("X-User-Id") Long userId,
 		@RequestHeader("X-User-Role") String roles
 	) {
 		if (!roles.contains("LAB_TECHNICIAN") && !roles.contains("ADMIN")) {
 			throw new InvalidRoleException("Invalid Role: Only users with LAB_TECHNICIAN role can start lab tests");
 		}
-		LabTestResponse response = labTestService.startTest(id, assignedTo);
+		LabTestResponse response = labTestService.startTest(id, assignedTo, userId);
 		if (response != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Lab test started successfully", response));
 		} else {
@@ -93,13 +94,14 @@ public class LabController {
 	@PostMapping("/{id}/result")
 	public ResponseEntity<ApiResponse<LabResultResponse>> uploadResult(
 		@RequestHeader("X-User-Role") String roles,
+		@RequestHeader("X-User-Id") Long userId,
 		@PathVariable Long id,
 		@RequestBody LabResultResponse resultDto
 	) {
 		if (!roles.contains("LAB_TECHNICIAN") && !roles.contains("ADMIN")) {
 			throw new InvalidRoleException("Invalid Role: Only users with LAB_TECHNICIAN role can upload lab results");
 		}
-		LabResultResponse response = labTestService.uploadResult(id, resultDto);
+		LabResultResponse response = labTestService.uploadResult(userId, id, resultDto);
 		if (response != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Lab result uploaded successfully", response));
 		} else {
@@ -150,7 +152,13 @@ public class LabController {
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long appointmentId
 	) {
-		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST") && !roles.contains("LAB_TECHNICIAN") && !roles.contains("USER")) {
+		if (
+			!roles.contains("DOCTOR") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("LAB_TECHNICIAN") &&
+			!roles.contains("USER")
+		) {
 			throw new InvalidRoleException(
 				"Invalid Role: Only users with DOCTOR or RECEPTIONIST role can view lab tests for an appointment"
 			);

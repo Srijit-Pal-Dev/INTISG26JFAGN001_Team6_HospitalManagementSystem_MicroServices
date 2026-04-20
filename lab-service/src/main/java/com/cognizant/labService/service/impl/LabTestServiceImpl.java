@@ -111,44 +111,33 @@ public class LabTestServiceImpl implements LabTestService {
 	@Override
 	@Transactional
 	public LabTestResponse collectSample(Long labTestId) {
-		LabTest test = getLabTestOrThrow(labTestId);
+		LabTest test = labTestRepository.findById(labTestId).orElseThrow(() -> new LabTestNotFoundException(labTestId));
 		test.setStatus(LabTestStatus.SAMPLE_COLLECTED);
 		test.setUpdatedAt(LocalDateTime.now());
 		LabTest saved = labTestRepository.save(test);
-		NotificationResponse notification = NotificationResponse
-			.builder()
-			.title("Lab Sample Collected")
-			.message("Sample collected for test: " + saved.getTestName() + " (" + saved.getTestCode() + ")")
-			.type(NotificationType.LAB)
-			.build();
-		createNotification(notification);
+
 		return mapper.toDto(saved);
 	}
 
 	// UPDATE LAB TEST STATUS - IN PROGRESS
 	@Override
 	@Transactional
-	public LabTestResponse startTest(Long labTestId, String assignedTo) {
-		LabTest test = getLabTestOrThrow(labTestId);
+	public LabTestResponse startTest(Long labTestId, String assignedTo, Long userId) {
+		LabTest test = labTestRepository.findById(labTestId).orElseThrow(() -> new LabTestNotFoundException(labTestId));
 		test.setStatus(LabTestStatus.IN_PROGRESS);
 		test.setUpdatedAt(LocalDateTime.now());
 		test.setAssignedTo(assignedTo);
 		LabTest saved = labTestRepository.save(test);
-		NotificationResponse notification = NotificationResponse
-			.builder()
-			.title("Lab Test Started")
-			.message("Lab test started for: " + saved.getTestName() + " (" + saved.getTestCode() + ")")
-			.type(NotificationType.LAB)
-			.build();
-		createNotification(notification);
 		return mapper.toDto(saved);
 	}
 
 	// UPLOAD LAB RESULT
 	@Override
 	@Transactional
-	public LabResultResponse uploadResult(Long labTestId, LabResultResponse resultDto) {
-		LabTest labTest = getLabTestOrThrow(labTestId); // ensure test exists before creating result
+	public LabResultResponse uploadResult(Long userId, Long labTestId, LabResultResponse resultDto) {
+		LabTest labTest = labTestRepository
+			.findById(labTestId)
+			.orElseThrow(() -> new LabTestNotFoundException(labTestId)); // ensure test exists before creating result
 
 		LabResult existingResult = labResultRepository.findByLabTestId(labTestId);
 		if (existingResult != null) {
@@ -163,10 +152,13 @@ public class LabTestServiceImpl implements LabTestService {
 		result.setFee(labTest.getFee());
 		result.setReferenceRange(resultDto.getReferenceRange());
 		result.setRecordedAt(LocalDateTime.now());
-
+		result.setLabTest(labTest);
+		labTest.setStatus(LabTestStatus.COMPLETED);
+		labTestRepository.save(labTest);
 		LabResult savedResult = labResultRepository.save(result);
 		NotificationResponse notification = NotificationResponse
 			.builder()
+			.userId(userId)
 			.title("Lab Result Uploaded")
 			.message("Result uploaded for test: " + labTest.getTestName() + " (" + labTest.getTestCode() + ")")
 			.type(NotificationType.LAB)
@@ -179,8 +171,11 @@ public class LabTestServiceImpl implements LabTestService {
 	@Override
 	@Transactional
 	public LabResultResponse getResultsByLabTestId(Long labTestId) {
-		getLabTestOrThrow(labTestId); // ensure test exists
+		// ensure test exists
 		LabResult result = labResultRepository.findByLabTestId(labTestId);
+		if (result == null) {
+			throw new LabTestNotFoundException(labTestId);
+		}
 		return mapper.toDto(result);
 	}
 
@@ -211,14 +206,14 @@ public class LabTestServiceImpl implements LabTestService {
 	}
 
 	// PRIVATE HELPER
-	@Transactional
-	private LabTest getLabTestOrThrow(Long id) {
-		return labTestRepository.findById(id).orElseThrow(() -> new LabTestNotFoundException(id));
-		//        private LabResult getLabResultOrThrow(Long id){
-		//            return labResultRepository.findById(id)
-		//                    .orElseThrow(() -> new LabResultNotFoundException(id));
-		//        }
-	}
+	//  @Transactional
+	//  private LabTest getLabTestOrThrow(Long id) {
+	//     return labTestRepository.findById(id).orElseThrow(() -> new LabTestNotFoundException(id));
+	//     //        private LabResult getLabResultOrThrow(Long id){
+	//     //            return labResultRepository.findById(id)
+	//     //                    .orElseThrow(() -> new LabResultNotFoundException(id));
+	//     //        }
+	//  }
 
 	@CircuitBreaker(name = "notificationServiceCB", fallbackMethod = "createNotificationFallback")
 	private NotificationResponse createNotification(NotificationResponse notification) {
