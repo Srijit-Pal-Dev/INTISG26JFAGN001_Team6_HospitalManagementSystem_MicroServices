@@ -13,6 +13,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -305,8 +306,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 				PatientDTO patient = getPatientInfo(invoice.getPatientId());
 				DoctorDTO doctor = getDoctorInfo(invoice.getDoctorId());
 				AppointmentDTO appointment = getAppointmentInfo(invoice.getAppointmentId());
-				List<PharmacyDTO> medicines = getMedicinesByAppointmentId(invoice.getAppointmentId());
-				List<LabDTO> labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
+
+				List<PharmacyDTO> medicines = Optional
+					.ofNullable(getMedicinesByAppointmentId(invoice.getAppointmentId()))
+					.orElse(Collections.emptyList());
+				List<LabDTO> labTests = Optional
+					.ofNullable(getLabTestsByAppointmentId(invoice.getAppointmentId()))
+					.orElse(Collections.emptyList());
 
 				InvoiceDTO dto = InvoiceMapper.toDTO(invoice);
 				dto.setPatient(patient);
