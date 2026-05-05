@@ -9,10 +9,9 @@ public class DoctorSlotMapper {
 		if (doctorSlot == null) {
 			return null;
 		}
-		return DoctorSlotDTO
-			.builder()
+		return DoctorSlotDTO.builder()
 			.id(doctorSlot.getId())
-                .userId(doctorSlot.getUserId())
+            .userId(doctorSlot.getUserId())
 			.doctorId(doctorSlot.getDoctorId())
 			.slotDate(doctorSlot.getSlotDate())
 			.slotTime(doctorSlot.getSlotTime())

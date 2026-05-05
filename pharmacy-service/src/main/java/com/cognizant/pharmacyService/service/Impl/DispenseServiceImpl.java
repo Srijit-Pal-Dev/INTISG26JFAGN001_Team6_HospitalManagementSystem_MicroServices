@@ -16,6 +16,8 @@ import com.cognizant.pharmacyService.service.DispenseService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +66,8 @@ public class DispenseServiceImpl implements DispenseService {
 			dispenseRequest.setUnitPrice(medicine.getPricePerUnit());
 			dispenseRequest.setTotalPrice(totalPrice);
 			dispenseRequest.setStatus(DispenseStatus.PENDING);
-
+            dispenseRequest.setDispensedAt(LocalDateTime.now());
+            System.out.println(">>> Creating dispense request: " + dispenseRequest);
 			dispenseRequestRepository.save(dispenseRequest);
 		}
 	}
@@ -76,16 +79,23 @@ public class DispenseServiceImpl implements DispenseService {
 			.findByStatus(DispenseStatus.PENDING)
 			.stream()
 			.map(this::mapToResponse)
-			.toList();
+			.collect(Collectors.toList());
 	}
 
 	private DispenseRequestResponse mapToResponse(DispenseRequest entity) {
 		DispenseRequestResponse response = new DispenseRequestResponse();
 		response.setId(entity.getId());
+		response.setPrescriptionId(entity.getPrescriptionId());
+		response.setPatientId(entity.getPatientId());
+		response.setAppointmentId(entity.getAppointmentId());
 		response.setMedicineId(entity.getMedicineId());
 		response.setMedicineName(entity.getMedicineName());
 		response.setQuantity(entity.getQuantity());
+		response.setUnitPrice(entity.getUnitPrice());
+		response.setTotalPrice(entity.getTotalPrice());
 		response.setStatus(entity.getStatus().name());
+		response.setDispensedAt(entity.getDispensedAt());
+		response.setCreatedAt(entity.getCreatedAt());
 		return response;
 	}
 

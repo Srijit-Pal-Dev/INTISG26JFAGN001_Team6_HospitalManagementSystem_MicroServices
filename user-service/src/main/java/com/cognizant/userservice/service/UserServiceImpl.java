@@ -12,16 +12,11 @@ import com.cognizant.userservice.exception.UserNotFoundException;
 import com.cognizant.userservice.mapper.UserMapper;
 import com.cognizant.userservice.repository.RoleRepository;
 import com.cognizant.userservice.repository.UserRepository;
-import com.cognizant.userservice.util.ErrorResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +78,7 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public UserResponse getUserById(Long id, String role) {
 
-        if (!role.contains("ADMIN") && !role.contains("USER")) {
+        if (!role.contains("ADMIN")) {
             throw new InvalidRoleException("Forbidden Access");
         }
         return userMapper.toResponse(userRepository.findById(id)
@@ -94,7 +89,7 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public UserResponse getUserByUsername(String username, String role) {
 
-        if (!role.contains("ADMIN") && !role.contains("USER")) {
+        if (!role.contains("ADMIN")) {
             throw new InvalidRoleException("Forbidden Access");
         }
 
@@ -120,7 +115,7 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public List<UserResponse> getAllUsers(String role) {
 
-        if (!role.contains("ADMIN") && !role.contains("USER")) {
+        if (!role.contains("ADMIN")) {
             throw new InvalidRoleException("Forbidden Access");
         }
 

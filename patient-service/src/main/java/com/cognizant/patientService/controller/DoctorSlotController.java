@@ -194,6 +194,7 @@ public class DoctorSlotController {
 	@PostMapping("/create-many")
 	public ResponseEntity<ApiResponse<List<DoctorSlotDTO>>> createManySlots(
 		@RequestHeader("X-User-Role") String roles,
+        @RequestHeader("X-User-Id") Long userId,
 		@RequestParam Long doctorId,
 		@Valid @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate slotDate,
 		@Valid @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime startTime,
@@ -206,6 +207,7 @@ public class DoctorSlotController {
 				.body(new ApiResponse<>(403, "Forbidden: You don't have permission to access this resource", null));
 		}
 		List<DoctorSlotDTO> createdSlots = doctorSlotService.createManySlots(
+                userId,
 			doctorId,
 			slotDate,
 			startTime,

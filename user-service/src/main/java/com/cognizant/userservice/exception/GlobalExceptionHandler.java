@@ -28,11 +28,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    @ExceptionHandler(InvalidAccessException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAccess(InvalidAccessException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                "UNAUTHORIZED : You are not allowed to access this resource",
+                ex.getMessage(),
+                Instant.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
     @ExceptionHandler(InvalidRoleException.class)
     public ResponseEntity<ErrorResponse> handleInvalidRole(InvalidRoleException ex) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
-                "FORBIDDEN",
+                "FORBIDDEN : Invalid Role",
                 ex.getMessage(),
                 Instant.now(),
                 null

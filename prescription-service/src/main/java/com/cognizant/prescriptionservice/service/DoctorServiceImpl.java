@@ -19,7 +19,14 @@ public class DoctorServiceImpl implements DoctorService {
 	@Override
 	@Transactional
 	public DoctorResponse createDoctorProfile(DoctorProfileRequest request, Long userId) {
-		request.setUserId(userId);
+
+
+//        if (doctorRepository.existsByUserId(userId)) {
+//            throw new IllegalStateException(
+//                    "Doctor profile already exists for userId: " + userId
+//            );
+//        }
+        request.setUserId(userId);
 		Doctor newDoctor = DoctorMapper.toEntity(request);
 		Doctor savedDoctor = doctorRepository.save(newDoctor);
 		return DoctorMapper.toDTO(savedDoctor);
@@ -42,8 +49,8 @@ public class DoctorServiceImpl implements DoctorService {
 			.findByUserId(userId)
 			.orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-		DoctorMapper.toEntity(request);
-		return DoctorMapper.toDTO(doctorRepository.save(doctor));
+        DoctorMapper.updateEntity(doctor, request);
+		return DoctorMapper.toDTO(doctor);
 	}
 
 	@Override

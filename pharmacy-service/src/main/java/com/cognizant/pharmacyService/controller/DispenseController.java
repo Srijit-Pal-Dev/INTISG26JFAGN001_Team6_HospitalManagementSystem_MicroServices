@@ -36,7 +36,8 @@ public class DispenseController {
 		}
 
 		dispenseService.createDispenseRequest(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body("Dispense request created successfully");
+        System.out.println("Dispense request created: " + request);
+		return ResponseEntity.status(HttpStatus.CREATED).body("Dispense Request Created Successfully");
 	}
 
 	@GetMapping("/pending")

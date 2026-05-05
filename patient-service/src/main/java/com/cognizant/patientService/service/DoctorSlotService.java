@@ -9,6 +9,7 @@ public interface DoctorSlotService {
 	DoctorSlotDTO createSlot(DoctorSlotDTO doctorSlotDTO, Long userId);
 
 	List<DoctorSlotDTO> createManySlots(
+            Long userId,
 		Long doctorId,
 		LocalDate slotDate,
 		LocalTime startTime,

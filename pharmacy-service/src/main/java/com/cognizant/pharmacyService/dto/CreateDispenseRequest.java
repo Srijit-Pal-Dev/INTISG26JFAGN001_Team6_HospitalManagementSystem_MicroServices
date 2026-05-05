@@ -1,10 +1,7 @@
 package com.cognizant.pharmacyService.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -14,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Getter
 @Setter
+@ToString
 public class CreateDispenseRequest {
 
 	@NotNull(message = "Prescription Id is required")
@@ -66,6 +64,7 @@ public class CreateDispenseRequest {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
+    @ToString
 	public static class MedicineItem {
 
 		@NotNull(message = "Medicine Id is required")
