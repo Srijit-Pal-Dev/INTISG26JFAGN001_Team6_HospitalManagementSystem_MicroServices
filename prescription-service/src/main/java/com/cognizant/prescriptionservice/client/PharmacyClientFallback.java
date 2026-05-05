@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 public class PharmacyClientFallback implements PharmacyClient {
 
     @Override
-    public void createDispenseRequest(DispenseRequest request) {
+    public void createDispenseRequest(String role, DispenseRequest request) {
         System.out.println(
                 "Pharmacy Service DOWN. Dispense request skipped."
         );

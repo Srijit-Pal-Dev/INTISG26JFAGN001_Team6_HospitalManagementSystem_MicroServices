@@ -2,8 +2,13 @@ package com.cognizant.userservice.controller;
 
 import com.cognizant.userservice.domain.*;
 import com.cognizant.userservice.dto.*;
+import com.cognizant.userservice.exception.InvalidRoleException;
 import com.cognizant.userservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +44,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Register patient", description = "A perosn using the webApp can register as a patient")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    @Operation(summary = "Register User", description = "A perosn using the webApp can register as a User")
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest request) {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
@@ -48,7 +53,13 @@ public class AuthController {
     @PostMapping("/logout")
     @Transactional
     @Operation(summary = "User Logout", description = "User can log out from webApp")
-    public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<Map<String,String>> logout(
+            @RequestHeader("X-User-Role") String roles,
+            @Valid @RequestBody LogoutRequest request) {
+
+        if(!roles.contains("ADMIN") && !roles.contains("DOCTOR") && !roles.contains("USER") && !roles.contains("PHARMACIST") && !roles.contains("LAB_TECHNICIAN")){
+            throw new InvalidRoleException("Invalid Access");
+        }
 
         authService.logout(request.getRefreshToken());
         return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","Successfully logged out"));

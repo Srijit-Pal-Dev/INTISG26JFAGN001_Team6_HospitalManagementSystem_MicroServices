@@ -1,7 +1,9 @@
 package com.cognizant.billingService.controller;
 
+import com.cognizant.billingService.domain.Payment;
 import com.cognizant.billingService.dto.InvoiceDTO;
 import com.cognizant.billingService.dto.LabDTO;
+import com.cognizant.billingService.dto.PaymentDTO;
 import com.cognizant.billingService.dto.PharmacyDTO;
 import com.cognizant.billingService.exception.InvalidRoleException;
 import com.cognizant.billingService.service.InvoiceService;
@@ -128,7 +130,7 @@ public class InvoiceController {
 	}
 
 	@PostMapping("/payment/{invoiceId}")
-	public ResponseEntity<ApiResponse<InvoiceDTO>> createPaymentForInvoice(
+	public ResponseEntity<?> createPaymentForInvoice(
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long invoiceId
 	) {
@@ -136,8 +138,9 @@ public class InvoiceController {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		InvoiceDTO updatedInvoice = invoiceService.createPayemntForInvoice(invoiceId);
+//        PaymentDTO payment = updatedInvoice.getPayment();
 		if (updatedInvoice != null) {
-			return ResponseEntity.ok(new ApiResponse<>(200, "Payment Created Successfully", updatedInvoice));
+			return ResponseEntity.ok("Payment successfully created for Invoice ID : "+invoiceId);
 		} else {
 			return ResponseEntity
 				.status(400)

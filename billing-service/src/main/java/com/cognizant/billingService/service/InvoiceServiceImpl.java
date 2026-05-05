@@ -7,6 +7,7 @@ import com.cognizant.billingService.domain.Payment;
 import com.cognizant.billingService.domain.PaymentStatus;
 import com.cognizant.billingService.dto.*;
 import com.cognizant.billingService.mapper.InvoiceMapper;
+import com.cognizant.billingService.mapper.PaymentMapper;
 import com.cognizant.billingService.respository.InvoiceRepository;
 import com.cognizant.billingService.respository.PaymentRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -15,6 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +67,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 		PatientDTO patient = getPatientInfo(patientId);
 		AppointmentDTO appointment = getAppointmentInfo(appointmentId);
+//        System.out.println("AppointmentDTO : "+appointment);
 		DoctorDTO doctor = getDoctorInfo(appointment.getDoctorId());
+//        System.out.println("Doctor DTO : "+doctor);
 		Long count = invoiceRepository.count() + 1;
 		String generatedInvoice = "INV" + String.format("%05d", count);
 
@@ -345,6 +350,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 			.findById(invoiceId)
 			.orElseThrow(() -> new RuntimeException("Invoice with id " + invoiceId + " not found"));
 		createPaymentForInvoice(invoice, invoice.getPatientId());
+        Optional<Payment> payment = paymentRepository.findByInvoiceId(invoiceId);
+        invoice.setPayment(payment.get());
 		return InvoiceMapper.toDTO(invoice);
 	}
 

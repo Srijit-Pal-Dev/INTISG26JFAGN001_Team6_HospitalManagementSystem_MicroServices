@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
@@ -13,7 +14,9 @@ import java.util.List;
 public interface PharmacyClient {
 
     @PostMapping("/dispense/create")
-    void createDispenseRequest(@RequestBody DispenseRequest request);
+    void createDispenseRequest(
+            @RequestHeader("X-User-Role") String role,
+            @RequestBody DispenseRequest request);
 
     @Getter @Setter @AllArgsConstructor @NoArgsConstructor
     class DispenseRequest {
@@ -26,9 +29,10 @@ public interface PharmacyClient {
     @Getter @Setter @AllArgsConstructor @NoArgsConstructor
     class MedicineItem {
         private Long medicineId;
-        private String medicineName;
-        private String dosage;
-        private String frequency;
-        private String duration;
+//        private String medicineName;
+//        private String dosage;
+//        private String frequency;
+//        private String duration;
+        private Integer quantity;
     }
 }

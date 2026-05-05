@@ -2,7 +2,12 @@ package com.cognizant.userservice.controller;
 
 import com.cognizant.userservice.dto.CreateUserRequest;
 import com.cognizant.userservice.dto.UserResponse;
+import com.cognizant.userservice.exception.InvalidAccessException;
 import com.cognizant.userservice.service.UserService;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +40,7 @@ public class UserController {
     @Operation(summary = "Get user by ID")
     public ResponseEntity<UserResponse> getUserById(
             @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-user-Id") Long userId,
             @PathVariable Long id) {
 
         UserResponse response = userService.getUserById(id,role);
@@ -44,6 +51,7 @@ public class UserController {
     @Operation(summary = "Get user by Usernname")
     public ResponseEntity<UserResponse> getUserByUsername(
             @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-user-Id") Long userId,
             @PathVariable String username) {
 
         UserResponse response = userService.getUserByUsername(username,role);
@@ -61,12 +69,12 @@ public class UserController {
 
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Delete an user by Id", description = "Permanently removes a user. ADMIN only.")
-    public ResponseEntity<Void> deleteUser(
+    public ResponseEntity<String> deleteUser(
             @RequestHeader("X-User-Role") String role,
             @PathVariable Long id) {
 
         userService.deleteUser(id,role);
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body("User with ID :"+id+" deleted successfully");
     }
 
 }

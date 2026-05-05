@@ -41,14 +41,18 @@ public class DoctorMapper {
 			.build();
 	}
 
-	public static void updateEntity(DoctorProfileRequest request, Doctor doctor) {
-		if (request == null || doctor == null) {
-			return;
-		}
-		doctor.setFullName(request.getFullName());
-		doctor.setSpecialty(request.getSpecialty());
-		doctor.setQualification(request.getQualification());
-		doctor.setExperienceYears(request.getExperienceYears());
-		doctor.setConsultationFee(request.getConsultationFee());
-	}
+
+    public static void updateEntity(Doctor doctor, DoctorProfileRequest request) {
+        if (doctor == null || request == null) {
+            return;
+        }
+
+        doctor.setFullName(request.getFullName());
+        doctor.setSpecialty(request.getSpecialty());
+        doctor.setQualification(request.getQualification());
+        doctor.setExperienceYears(request.getExperienceYears());
+        doctor.setConsultationFee(request.getConsultationFee());
+
+    }
+
 }

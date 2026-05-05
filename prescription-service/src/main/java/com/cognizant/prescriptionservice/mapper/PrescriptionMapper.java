@@ -10,7 +10,6 @@ public class PrescriptionMapper {
 
 	private PrescriptionMapper() {}
 
-	// ✅ FIX IS HERE: convert List → Set
 	public static Prescription toEntity(CreatePrescriptionRequest request, Doctor doctor) {
 		Prescription prescription = Prescription
 			.builder()
@@ -23,7 +22,6 @@ public class PrescriptionMapper {
 			.createdAt(LocalDateTime.now())
 			.build();
 
-		// ✅ List → Set conversion (IMPORTANT)
 		if (request.getMedicines() != null) {
 			Set<PrescriptionMedicine> medicines = request
 				.getMedicines()
@@ -44,7 +42,6 @@ public class PrescriptionMapper {
 			prescription.setMedicines(medicines);
 		}
 
-		// ✅ List → Set conversion (IMPORTANT)
 		if (request.getLabTests() != null) {
 			Set<PrescriptionLabTest> labTests = request
 				.getLabTests()
@@ -64,7 +61,6 @@ public class PrescriptionMapper {
 		return prescription;
 	}
 
-	// ✅ Entity → DTO (Set → List is fine)
 	public static PrescriptionResponse toResponse(Prescription prescription) {
 		PrescriptionResponse response = new PrescriptionResponse();
 		response.setId(prescription.getId());

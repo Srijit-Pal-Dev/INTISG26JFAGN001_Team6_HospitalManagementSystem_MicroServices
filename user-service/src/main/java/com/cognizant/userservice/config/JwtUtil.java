@@ -26,16 +26,6 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String username, Collection<String> roles) {
-        return Jwts.builder()
-                .subject(username)
-                .claim("roles",roles)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(key())
-                .compact();
-    }
-
     public String generateToken(Long userId, String username, Collection<String> roles) {
         return Jwts.builder()
                 .subject(username)
