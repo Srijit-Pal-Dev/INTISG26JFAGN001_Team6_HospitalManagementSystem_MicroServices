@@ -105,11 +105,12 @@ class AuthServiceImplTest {
         when(refreshTokenRepository.save(any()))
                 .thenReturn(refreshToken);
 
-        Map<String, String> response = authService.login(request);
+//        Map<String, String> response = authService.login(request);
+        LoginResponse response = authService.login(request);
 
         assertNotNull(response);
-        assertEquals("access-token", response.get("accessToken"));
-        assertEquals("refresh-token", response.get("refreshToken"));
+        assertEquals("access-token", response.getAccessToken());
+        assertEquals("refresh-token", response.getRefreshToken());
 
         verify(notificationClient, times(1)).send(any());
     }
