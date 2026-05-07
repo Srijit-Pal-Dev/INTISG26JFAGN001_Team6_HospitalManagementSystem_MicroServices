@@ -192,15 +192,12 @@ public class LabTestServiceImpl implements LabTestService {
 			.toList();
 	}
 
-	@Override
-	@Transactional
-	public List<LabTestResponse> getLabTestsByAppointmentId(Long appointmentId) {
-		List<LabTest> tests = labTestRepository.findByAppointmentId(appointmentId);
-		if (tests.isEmpty()) {
-			throw new LabTestNotFoundException(appointmentId);
-		}
-		return tests.stream().map(test -> mapper.toDto(test)).toList();
-	}
+    @Override
+    @Transactional
+    public List<LabTestResponse> getLabTestsByAppointmentId(Long appointmentId) {
+        List<LabTest> tests = labTestRepository.findByAppointmentId(appointmentId);
+        return tests.stream().map(mapper::toDto).toList();
+    }
 
 	// PRIVATE HELPER
 //	@Transactional
