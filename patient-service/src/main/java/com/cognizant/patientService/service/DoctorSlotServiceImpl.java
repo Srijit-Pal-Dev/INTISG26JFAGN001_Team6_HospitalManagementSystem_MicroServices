@@ -81,6 +81,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
 	@Override
 	@Transactional
 	public List<DoctorSlotDTO> createManySlots(
+		Long userId,
 		Long doctorId,
 		LocalDate slotDate,
 		LocalTime startTime,
@@ -111,7 +112,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
 			DoctorSlot saved = doctorSlotRepository.save(entity);
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(saved.getUserId())
+				.userId(userId)
 				.title("Slot Created")
 				.message(
 					"A new slot has been created for doctor id " +

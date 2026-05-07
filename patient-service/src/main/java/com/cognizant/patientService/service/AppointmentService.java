@@ -5,7 +5,7 @@ import com.cognizant.patientService.dto.AppointmentDTO;
 import java.util.List;
 
 public interface AppointmentService {
-	AppointmentDTO scheduleAppointment(AppointmentDTO appointmentDTO);
+	AppointmentDTO scheduleAppointment(Long userId, AppointmentDTO appointmentDTO);
 
 	AppointmentDTO updateAppointment(Long id, AppointmentDTO appointmentDTO);
 

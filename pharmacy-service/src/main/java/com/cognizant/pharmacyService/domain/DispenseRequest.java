@@ -2,6 +2,8 @@ package com.cognizant.pharmacyService.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,11 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Setter;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "dispense_requests")
@@ -23,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class DispenseRequest {
 
 	@Id

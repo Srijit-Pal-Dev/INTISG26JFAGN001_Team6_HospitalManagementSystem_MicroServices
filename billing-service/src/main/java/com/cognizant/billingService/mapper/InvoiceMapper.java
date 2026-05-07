@@ -13,6 +13,7 @@ public class InvoiceMapper {
                 .id(invoice.getId())
                 .invoiceNumber(invoice.getInvoiceNumber())
                 .patientId(invoice.getPatientId())
+                .doctorId(invoice.getDoctorId())
                 .appointmentId(invoice.getAppointmentId())
                 .consultationFee(invoice.getConsultationFee())
                 .medicineFee(invoice.getMedicineFee())
@@ -32,6 +33,7 @@ public class InvoiceMapper {
         invoice.setId(invoiceDTO.getId());
         invoice.setInvoiceNumber(invoiceDTO.getInvoiceNumber());
         invoice.setPatientId(invoiceDTO.getPatientId());
+        invoice.setDoctorId(invoiceDTO.getDoctorId());
         invoice.setAppointmentId(invoiceDTO.getAppointmentId());
         invoice.setConsultationFee(invoiceDTO.getConsultationFee());
         invoice.setMedicineFee(invoiceDTO.getMedicineFee());

@@ -49,7 +49,7 @@ public class AppointmentServiceImpl implements AppointmentService {
      appointment. Finally, it returns the saved appointment as a DTO. */
 	@Override
 	@Transactional
-	public AppointmentDTO scheduleAppointment(AppointmentDTO appointmentDTO) {
+	public AppointmentDTO scheduleAppointment(Long userId, AppointmentDTO appointmentDTO) {
 		Patient patient = patientRepository
 			.findById(appointmentDTO.getPatientId())
 			.orElseThrow(() -> new RuntimeException("Patient with id " + appointmentDTO.getPatientId() + " not found"));
@@ -84,7 +84,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 		NotificationDTO notification = NotificationDTO
 			.builder()
-			.userId(patient.getUserId())
+			.userId(userId)
 			.title("Appointment Scheduled")
 			.message(
 				"Your appointment with doctor id " +

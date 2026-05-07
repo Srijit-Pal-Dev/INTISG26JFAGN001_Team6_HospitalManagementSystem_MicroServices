@@ -40,4 +40,19 @@ public class DoctorMapper {
 			.consultationFee(response.getConsultationFee())
 			.build();
 	}
+
+
+    public static void updateEntity(Doctor doctor, DoctorProfileRequest request) {
+        if (doctor == null || request == null) {
+            return;
+        }
+
+        doctor.setFullName(request.getFullName());
+        doctor.setSpecialty(request.getSpecialty());
+        doctor.setQualification(request.getQualification());
+        doctor.setExperienceYears(request.getExperienceYears());
+        doctor.setConsultationFee(request.getConsultationFee());
+
+    }
+
 }

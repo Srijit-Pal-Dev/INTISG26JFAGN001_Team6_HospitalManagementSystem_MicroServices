@@ -72,7 +72,6 @@ class AuthServiceImplTest {
 
     @Test
     void testLogin_success() {
-        // ✅ Arrange
         LoginRequest request = new LoginRequest();
         request.setUsername("testuser");
         request.setPassword("password");
@@ -106,20 +105,18 @@ class AuthServiceImplTest {
         when(refreshTokenRepository.save(any()))
                 .thenReturn(refreshToken);
 
-        // ✅ Act
-        Map<String, String> response = authService.login(request);
+//        Map<String, String> response = authService.login(request);
+        LoginResponse response = authService.login(request);
 
-        // ✅ Assert
         assertNotNull(response);
-        assertEquals("access-token", response.get("accessToken"));
-        assertEquals("refresh-token", response.get("refreshToken"));
+        assertEquals("access-token", response.getAccessToken());
+        assertEquals("refresh-token", response.getRefreshToken());
 
         verify(notificationClient, times(1)).send(any());
     }
 
     @Test
     void testRegister_success() {
-        // ✅ Arrange
         RegisterRequest request = new RegisterRequest();
         request.setUsername("newuser");
         request.setPassword("password");
@@ -137,44 +134,36 @@ class AuthServiceImplTest {
         when(userRepository.save(any()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // ✅ Act
         Map<String, String> response = authService.register(request);
 
-        // ✅ Assert
         assertEquals("User registered successfully", response.get("message"));
         verify(notificationClient, times(1)).send(any());
     }
 
     @Test
     void testRegister_usernameAlreadyExists() {
-        // ✅ Arrange
         RegisterRequest request = new RegisterRequest();
         request.setUsername("testuser");
 
         when(userRepository.existsByUsername("testuser"))
                 .thenReturn(true);
 
-        // ✅ Act
         Map<String, String> response = authService.register(request);
 
-        // ✅ Assert
         assertEquals("Username is already taken", response.get("message"));
         verify(notificationClient, never()).send(any());
     }
 
     @Test
     void testLogout_success() {
-        // ✅ Act
         authService.logout("refresh-token");
 
-        // ✅ Assert
         verify(refreshTokenRepository, times(1))
                 .deleteByToken("refresh-token");
     }
 
     @Test
     void testRefreshAccessToken_success() {
-        // ✅ Arrange
         RefreshTokenRequest request = new RefreshTokenRequest();
         request.setRefreshToken("refresh-token");
 
@@ -190,10 +179,8 @@ class AuthServiceImplTest {
         when(jwtUtil.generateToken(anyLong(), anyString(), anyList()))
                 .thenReturn("new-access-token");
 
-        // ✅ Act
         Map<String, String> response = authService.refreshAccessToken(request);
 
-        // ✅ Assert
         assertEquals("new-access-token", response.get("New accessToken"));
     }
 }

@@ -72,8 +72,6 @@ class UserServiceImplTest {
         userResponse.setFullName("Test User");
     }
 
-    // -------------------- CREATE USER --------------------
-
     @Test
     void testCreateUser_success() {
         CreateUserRequest request = new CreateUserRequest();
@@ -117,8 +115,6 @@ class UserServiceImplTest {
         );
     }
 
-    // -------------------- GET USER BY ID --------------------
-
     @Test
     void testGetUserById_success() {
         when(userRepository.findById(1L))
@@ -133,8 +129,6 @@ class UserServiceImplTest {
         assertNotNull(response);
         assertEquals(1L, response.getId());
     }
-
-    // -------------------- GET USER BY USERNAME --------------------
 
     @Test
     void testGetUserByUsername_success() {
@@ -151,8 +145,6 @@ class UserServiceImplTest {
         assertEquals("testuser", response.getUsername());
     }
 
-    // -------------------- DELETE USER --------------------
-
     @Test
     void testDeleteUser_success() {
         when(userRepository.existsById(1L))
@@ -163,8 +155,6 @@ class UserServiceImplTest {
         verify(userRepository, times(1))
                 .deleteById(1L);
     }
-
-    // -------------------- GET ALL USERS --------------------
 
     @Test
     void testGetAllUsers_success() {

@@ -13,6 +13,7 @@ public class CorsConfig {
 	@Bean
 	public CorsWebFilter corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:4200");
 		config.setAllowCredentials(false);
 		config.setAllowedHeaders(List.of("*"));
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));

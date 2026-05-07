@@ -135,7 +135,9 @@ public class LabTestServiceImpl implements LabTestService {
 	@Override
 	@Transactional
 	public LabResultResponse uploadResult(Long userId, Long labTestId, LabResultResponse resultDto) {
-		LabTest labTest = labTestRepository.findById(labTestId).orElseThrow(() -> new LabTestNotFoundException(labTestId)); // ensure test exists before creating result
+		LabTest labTest = labTestRepository
+			.findById(labTestId)
+			.orElseThrow(() -> new LabTestNotFoundException(labTestId)); // ensure test exists before creating result
 
 		LabResult existingResult = labResultRepository.findByLabTestId(labTestId);
 		if (existingResult != null) {
@@ -150,12 +152,13 @@ public class LabTestServiceImpl implements LabTestService {
 		result.setFee(labTest.getFee());
 		result.setReferenceRange(resultDto.getReferenceRange());
 		result.setRecordedAt(LocalDateTime.now());
-        result.setLabTest(labTest);
-
+		result.setLabTest(labTest);
+		labTest.setStatus(LabTestStatus.COMPLETED);
+		labTestRepository.save(labTest);
 		LabResult savedResult = labResultRepository.save(result);
 		NotificationResponse notification = NotificationResponse
 			.builder()
-                .userId(userId)
+			.userId(userId)
 			.title("Lab Result Uploaded")
 			.message("Result uploaded for test: " + labTest.getTestName() + " (" + labTest.getTestCode() + ")")
 			.type(NotificationType.LAB)
@@ -168,11 +171,11 @@ public class LabTestServiceImpl implements LabTestService {
 	@Override
 	@Transactional
 	public LabResultResponse getResultsByLabTestId(Long labTestId) {
-		 // ensure test exists
+		// ensure test exists
 		LabResult result = labResultRepository.findByLabTestId(labTestId);
-        if(result==null){
-            throw new LabTestNotFoundException(labTestId);
-        }
+		if (result == null) {
+			throw new LabTestNotFoundException(labTestId);
+		}
 		return mapper.toDto(result);
 	}
 
@@ -192,22 +195,22 @@ public class LabTestServiceImpl implements LabTestService {
 			.toList();
 	}
 
-    @Override
-    @Transactional
-    public List<LabTestResponse> getLabTestsByAppointmentId(Long appointmentId) {
-        List<LabTest> tests = labTestRepository.findByAppointmentId(appointmentId);
-        return tests.stream().map(mapper::toDto).toList();
-    }
+	@Override
+	@Transactional
+	public List<LabTestResponse> getLabTestsByAppointmentId(Long appointmentId) {
+		List<LabTest> tests = labTestRepository.findByAppointmentId(appointmentId);
+		return tests.stream().map(mapper::toDto).toList();
+	}
 
 	// PRIVATE HELPER
-//	@Transactional
-//	private LabTest getLabTestOrThrow(Long id) {
-//		return labTestRepository.findById(id).orElseThrow(() -> new LabTestNotFoundException(id));
-//		//        private LabResult getLabResultOrThrow(Long id){
-//		//            return labResultRepository.findById(id)
-//		//                    .orElseThrow(() -> new LabResultNotFoundException(id));
-//		//        }
-//	}
+	//  @Transactional
+	//  private LabTest getLabTestOrThrow(Long id) {
+	//     return labTestRepository.findById(id).orElseThrow(() -> new LabTestNotFoundException(id));
+	//     //        private LabResult getLabResultOrThrow(Long id){
+	//     //            return labResultRepository.findById(id)
+	//     //                    .orElseThrow(() -> new LabResultNotFoundException(id));
+	//     //        }
+	//  }
 
 	@CircuitBreaker(name = "notificationServiceCB", fallbackMethod = "createNotificationFallback")
 	private NotificationResponse createNotification(NotificationResponse notification) {

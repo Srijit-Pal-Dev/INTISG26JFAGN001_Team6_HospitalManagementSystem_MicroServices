@@ -76,7 +76,7 @@ public class LabController {
 	public ResponseEntity<ApiResponse<LabTestResponse>> startTest(
 		@PathVariable Long id,
 		@RequestParam String assignedTo,
-        @RequestHeader("X-User-Id") Long userId,
+		@RequestHeader("X-User-Id") Long userId,
 		@RequestHeader("X-User-Role") String roles
 	) {
 		if (!roles.contains("LAB_TECHNICIAN") && !roles.contains("ADMIN")) {
@@ -94,7 +94,7 @@ public class LabController {
 	@PostMapping("/{id}/result")
 	public ResponseEntity<ApiResponse<LabResultResponse>> uploadResult(
 		@RequestHeader("X-User-Role") String roles,
-        @RequestHeader("X-User-Id") Long userId,
+		@RequestHeader("X-User-Id") Long userId,
 		@PathVariable Long id,
 		@RequestBody LabResultResponse resultDto
 	) {
@@ -152,7 +152,13 @@ public class LabController {
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long appointmentId
 	) {
-		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN") && !roles.contains("RECEPTIONIST") && !roles.contains("LAB_TECHNICIAN") && !roles.contains("USER")) {
+		if (
+			!roles.contains("DOCTOR") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("LAB_TECHNICIAN") &&
+			!roles.contains("USER")
+		) {
 			throw new InvalidRoleException(
 				"Invalid Role: Only users with DOCTOR or RECEPTIONIST role can view lab tests for an appointment"
 			);

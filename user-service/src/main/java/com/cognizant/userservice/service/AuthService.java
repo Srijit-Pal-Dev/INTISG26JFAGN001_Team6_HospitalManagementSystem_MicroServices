@@ -2,6 +2,7 @@ package com.cognizant.userservice.service;
 
 import com.cognizant.userservice.domain.RefreshToken;
 import com.cognizant.userservice.dto.LoginRequest;
+import com.cognizant.userservice.dto.LoginResponse;
 import com.cognizant.userservice.dto.RefreshTokenRequest;
 import com.cognizant.userservice.dto.RegisterRequest;
 
@@ -15,7 +16,8 @@ public interface AuthService {
 
     RefreshToken verifyExpiration(RefreshToken token);
 
-    Map<String, String> login(LoginRequest request);
+//    Map<String, String> login(LoginRequest request);
+    LoginResponse login(LoginRequest request);
 
     Map<String, String> refreshAccessToken(RefreshTokenRequest request);
 

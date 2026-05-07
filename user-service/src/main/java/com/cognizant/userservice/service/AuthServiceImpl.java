@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -84,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
 //    @CircuitBreaker(name="myCircuitBreaker", fallbackMethod = "fallback")
-    public Map<String, String> login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         
         Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -115,10 +116,21 @@ public class AuthServiceImpl implements AuthService {
 
         SendNotificationRequest sendNotificationRequest = new SendNotificationRequest();
 
-        return Map.of(
-                "accessToken", accessToken,
-                "refreshToken", refreshToken.getToken()
-        );
+        LoginResponse response = LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken.getToken())
+                .id(user.getId())
+                .username(user.getUsername())
+                .roles(userRole)
+                .fullName(user.getFullName())
+                .build();
+
+//        return Map.of(
+//                "accessToken", accessToken,
+//                "refreshToken", refreshToken.getToken()
+//        );
+
+        return response;
 
     }
 
