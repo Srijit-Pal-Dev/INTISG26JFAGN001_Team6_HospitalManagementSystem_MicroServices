@@ -29,7 +29,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Login", description = "Authenticate and receive a JWT token")
-    public ResponseEntity<Map<String,String>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
         return ResponseEntity.status(HttpStatus.OK).body(authService.login(request));
 
