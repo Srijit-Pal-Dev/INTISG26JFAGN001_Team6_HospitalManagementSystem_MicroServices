@@ -1,3 +1,4 @@
+
 # Hospital Management System — Microservices Architecture
 
 A comprehensive Hospital Management System built using **Spring Boot Microservices**. The system covers patient registration, appointment scheduling, doctor management, prescriptions, pharmacy & medicine dispensing, lab tests, billing & invoicing, payments, mediclaim processing, and real-time notifications.

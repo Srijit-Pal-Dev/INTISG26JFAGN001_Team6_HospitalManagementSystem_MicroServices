@@ -1,5 +1,6 @@
 package com.cognizant.patientService.controller;
 
+import com.cognizant.patientService.domain.Patient;
 import com.cognizant.patientService.dto.DoctorSlotDTO;
 import com.cognizant.patientService.dto.PatientDTO;
 import com.cognizant.patientService.exception.InvalidRoleException;
@@ -462,6 +463,22 @@ public class PatientController {
 		PatientDTO patient = patientService.getPatientByMrn(mrn);
 		if (patient != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Patients Found", patient));
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(404, "Patients not found", null));
+		}
+	}
+
+	@GetMapping("/userId/{userId}")
+	public ResponseEntity<ApiResponse<List<PatientDTO>>> getPatientByUserId(
+		@RequestHeader("X-User-Role") String roles,
+		@PathVariable Long userId
+	) {
+		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
+			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
+		}
+		List<PatientDTO> pateintList = patientService.getPatientByUserId(userId);
+		if (pateintList != null && !pateintList.isEmpty()) {
+			return ResponseEntity.ok(new ApiResponse<>(200, "Patients Found", pateintList));
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(404, "Patients not found", null));
 		}

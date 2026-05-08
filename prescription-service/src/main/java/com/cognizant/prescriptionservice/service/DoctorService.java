@@ -2,6 +2,9 @@ package com.cognizant.prescriptionservice.service;
 
 import com.cognizant.prescriptionservice.dto.DoctorProfileRequest;
 import com.cognizant.prescriptionservice.dto.DoctorResponse;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 public interface DoctorService {
 
@@ -12,5 +15,8 @@ public interface DoctorService {
     DoctorResponse updateDoctorProfile(Long userId, DoctorProfileRequest request);
 
     DoctorResponse getDoctorById(Long doctorId);
+
+    @Transactional
+    List<DoctorResponse> getAllDoctor();
 }
 
