@@ -8,8 +8,11 @@ import com.cognizant.billingService.dto.PharmacyDTO;
 import com.cognizant.billingService.exception.InvalidRoleException;
 import com.cognizant.billingService.service.InvoiceService;
 import com.cognizant.billingService.util.ApiResponse;
+import jakarta.ws.rs.Path;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -100,7 +103,7 @@ public class InvoiceController {
 		if (invoices != null && !invoices.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Invoices Retrieved Successfully", invoices));
 		} else {
-			return ResponseEntity.status(404).body(new ApiResponse<>(404, "No invoices found", null));
+			return ResponseEntity.ok(new ApiResponse<>(200, "Not found", Collections.emptyList()));
 		}
 	}
 
@@ -129,6 +132,24 @@ public class InvoiceController {
 		}
 	}
 
+	@GetMapping("/patient/{patientId}")
+	public ResponseEntity<ApiResponse<List<InvoiceDTO>>> getInvoiceByPatientId(
+		@RequestHeader("X-User-Role") String roles,
+		@PathVariable Long patientId
+	) {
+		if (!roles.contains("ADMIN") && !roles.contains("USER") && !roles.contains("RECEPTIONIST")) {
+			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
+		}
+		List<InvoiceDTO> invoiceDTOList = invoiceService.getInvoiceByPatientId(patientId);
+		if (invoiceDTOList != null && !invoiceDTOList.isEmpty()) {
+			return ResponseEntity.ok(
+				new ApiResponse<>(200, "Invoice Found for patient Id successfully", invoiceDTOList)
+			);
+		} else {
+			return ResponseEntity.ok(new ApiResponse<>(200, "No invoices found", Collections.emptyList()));
+		}
+	}
+
 	@PostMapping("/payment/{invoiceId}")
 	public ResponseEntity<?> createPaymentForInvoice(
 		@RequestHeader("X-User-Role") String roles,
@@ -138,9 +159,9 @@ public class InvoiceController {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		InvoiceDTO updatedInvoice = invoiceService.createPayemntForInvoice(invoiceId);
-//        PaymentDTO payment = updatedInvoice.getPayment();
+		//        PaymentDTO payment = updatedInvoice.getPayment();
 		if (updatedInvoice != null) {
-			return ResponseEntity.ok("Payment successfully created for Invoice ID : "+invoiceId);
+			return ResponseEntity.ok("Payment successfully created for Invoice ID : " + invoiceId);
 		} else {
 			return ResponseEntity
 				.status(400)

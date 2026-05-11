@@ -10,6 +10,7 @@ import com.cognizant.patientService.dto.AppointmentDTO;
 import com.cognizant.patientService.dto.InvoiceDTO;
 import com.cognizant.patientService.dto.NotificationDTO;
 import com.cognizant.patientService.dto.NotificationType;
+import com.cognizant.patientService.exception.ResourceNotFoundException;
 import com.cognizant.patientService.mapper.AppointmentMapper;
 import com.cognizant.patientService.repository.AppointmentRepository;
 import com.cognizant.patientService.repository.DoctorSlotRepository;
@@ -69,7 +70,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			);
 		}
 
-		// Auto-populate date, time and doctorId from the slot
+		// Autopopulate date, time and doctorId from the slot
 		appointmentDTO.setDoctorId(slot.getDoctorId());
 		appointmentDTO.setAppointmentDate(slot.getSlotDate());
 		appointmentDTO.setAppointmentTime(slot.getSlotTime());
@@ -187,12 +188,12 @@ public class AppointmentServiceImpl implements AppointmentService {
      patient ID and returns its DTO. If the appointment is not found, it throws a RuntimeException. */
 	@Override
 	@Transactional
-	public AppointmentDTO getAppointmentByPatientId(Long patientId) {
-		Appointment appointment = appointmentRepository
-			.findByPatientId(patientId)
-			.orElseThrow(() -> new RuntimeException("Appointment with patient id " + patientId + " not found"));
-
-		return AppointmentMapper.toDTO(appointment);
+	public List<AppointmentDTO> getAppointmentByPatientId(Long patientId) {
+		List<Appointment> appointment = appointmentRepository.findByPatientId(patientId);
+		if (appointment.isEmpty()) {
+			throw new ResourceNotFoundException("Appointments not found");
+		}
+		return appointment.stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
 	}
 
 	/* this method retrieves an appointment by the doctor ID. It checks if the appointment exists for the given

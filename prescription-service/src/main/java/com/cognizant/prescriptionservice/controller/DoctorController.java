@@ -39,7 +39,7 @@ public class DoctorController {
 		@RequestHeader("X-User-Id") Long userId,
 		@Valid @RequestBody DoctorProfileRequest request
 	) {
-		if (!role.contains("DOCTOR")) {
+		if (!role.contains("DOCTOR") &&!role.contains("ADMIN")) {
 			throw new RuntimeException("Access denied: only DOCTOR role allowed");
 		}
 		return doctorService.createDoctorProfile(request, userId);
