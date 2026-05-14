@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "billing-service")
+@FeignClient(name = "billing-service", fallback = BillingClient.BillingClientFallback.class)
 public interface BillingClient {
 
     @PutMapping("/invoice/update/medicine-fee/{appointmentId}")
