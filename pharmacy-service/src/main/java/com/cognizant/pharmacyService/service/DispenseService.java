@@ -7,11 +7,13 @@ import com.cognizant.pharmacyService.dto.DispenseRequestResponse;
 
 public interface DispenseService {
 
-	List<DispenseRequestResponse> getPendingRequests();
+    List<DispenseRequestResponse> getPendingRequests();
 
-	void createDispenseRequest(CreateDispenseRequest request);
+    void createDispenseRequest(CreateDispenseRequest request);
 
-	DispenseRequestResponse dispense(Long id);
+    DispenseRequestResponse dispense(Long id);
 
-	List<PharmacyDTO> getMedicinesByAppointmentId(Long appointmentId);
+    List<PharmacyDTO> getMedicinesByAppointmentId(Long appointmentId);
+
+    List<DispenseRequestResponse> updateDispenseRequest(Long prescriptionId, CreateDispenseRequest request);
 }
