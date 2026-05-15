@@ -78,13 +78,7 @@ public class MediclaimController {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		List<MediclaimDTO> mediclaims = mediclaimService.getAllMediclaimsByPatientId(patientId);
-		if (mediclaims != null && !mediclaims.isEmpty()) {
-			return ResponseEntity.ok(new ApiResponse<>(200, "Mediclaims Retrieved Successfully", mediclaims));
-		} else {
-			return ResponseEntity
-				.status(404)
-				.body(new ApiResponse<>(404, "Mediclaims not found for patient id: " + patientId, null));
-		}  
+		return ResponseEntity.ok(new ApiResponse<>(200, "Found", mediclaims));
 	}
 
 	@GetMapping("/all")

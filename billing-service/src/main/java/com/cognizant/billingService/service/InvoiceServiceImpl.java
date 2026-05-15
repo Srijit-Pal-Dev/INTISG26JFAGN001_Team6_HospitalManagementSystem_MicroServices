@@ -8,6 +8,7 @@ import com.cognizant.billingService.domain.PaymentStatus;
 import com.cognizant.billingService.dto.*;
 import com.cognizant.billingService.exception.ResourceNotFoundException;
 import com.cognizant.billingService.mapper.InvoiceMapper;
+import com.cognizant.billingService.mapper.PaymentMapper;
 import com.cognizant.billingService.respository.InvoiceRepository;
 import com.cognizant.billingService.respository.PaymentRepository;
 import feign.FeignException;
@@ -370,12 +371,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 				List<PharmacyDTO> medicines = getMedicinesByAppointmentId(invoice.getAppointmentId());
 				List<LabDTO> labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
 
+				// ← THIS LINE MUST BE HERE
+				PaymentDTO payment = paymentRepository
+					.findByInvoiceId(invoice.getId())
+					.map(PaymentMapper::toDTO)
+					.orElse(null);
+
 				InvoiceDTO dto = InvoiceMapper.toDTO(invoice);
 				dto.setPatient(patient);
 				dto.setDoctor(doctor);
 				dto.setAppointment(appointment);
 				dto.setMedicines(medicines);
 				dto.setLabTests(labTests);
+				dto.setPayment(payment); // ← AND THIS LINE
 				return dto;
 			})
 			.collect(Collectors.toList());
