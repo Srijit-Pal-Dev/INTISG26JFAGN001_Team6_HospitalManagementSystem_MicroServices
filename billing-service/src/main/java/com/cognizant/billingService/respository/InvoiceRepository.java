@@ -10,5 +10,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 	List<Invoice> findByAppointmentId(Long appointmentId);
 	Optional<Invoice> findFirstByAppointmentId(Long appointmentId);
 	boolean existsByAppointmentId(Long appointmentId);
-}
+	List<Invoice> findByPatientId(Long patientId);
 
+	Optional<Invoice> findByPaymentId(Long paymentId);
+}

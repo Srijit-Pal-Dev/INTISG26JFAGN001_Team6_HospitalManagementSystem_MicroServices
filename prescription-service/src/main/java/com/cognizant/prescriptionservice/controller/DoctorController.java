@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import javax.print.Doc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -38,7 +39,7 @@ public class DoctorController {
 		@RequestHeader("X-User-Id") Long userId,
 		@Valid @RequestBody DoctorProfileRequest request
 	) {
-		if (!role.contains("DOCTOR")) {
+		if (!role.contains("DOCTOR") &&!role.contains("ADMIN")) {
 			throw new RuntimeException("Access denied: only DOCTOR role allowed");
 		}
 		return doctorService.createDoctorProfile(request, userId);
@@ -66,6 +67,23 @@ public class DoctorController {
 			throw new RuntimeException("Access denied: only DOCTOR role allowed");
 		}
 		return doctorService.updateDoctorProfile(userId, request);
+	}
+
+	@GetMapping("/all")
+	public ResponseEntity<List<DoctorResponse>> getAllDoctors(@RequestHeader("X-User-Role") String roles) {
+		if (
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("DOCTOR") &&
+			!roles.contains("USER")
+		) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		List<DoctorResponse> doctors = doctorService.getAllDoctor();
+		if (doctors != null || !doctors.isEmpty()) {
+			return ResponseEntity.ok(doctors);
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	}
 
 	@GetMapping("/check/{doctorId}")

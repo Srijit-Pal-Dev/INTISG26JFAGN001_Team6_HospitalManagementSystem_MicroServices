@@ -20,50 +20,67 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/dispense")
 public class DispenseController {
 
-	private final DispenseService dispenseService;
+    private final DispenseService dispenseService;
 
-	public DispenseController(DispenseService dispenseService) {
-		this.dispenseService = dispenseService;
-	}
+    public DispenseController(DispenseService dispenseService) {
+        this.dispenseService = dispenseService;
+    }
 
-	@PostMapping
-	public ResponseEntity<String> createDispenseRequest(
-		@RequestHeader("X-User-Role") String role,
-		@RequestBody CreateDispenseRequest request
-	) {
-		if (!role.contains("DOCTOR") && !role.contains("ADMIN")) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only doctors can create dispense requests");
-		}
+    @PostMapping
+    public ResponseEntity<String> createDispenseRequest(
+            @RequestHeader("X-User-Role") String role,
+            @RequestBody CreateDispenseRequest request
+    ) {
+        if (!role.contains("DOCTOR") && !role.contains("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only doctors can create dispense requests");
+        }
 
-		dispenseService.createDispenseRequest(request);
-        System.out.println("Dispense request created: " + request);
-		return ResponseEntity.status(HttpStatus.CREATED).body("Dispense Request Created Successfully");
-	}
+        dispenseService.createDispenseRequest(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Dispense request created successfully");
+    }
 
-	@GetMapping("/pending")
-	public ResponseEntity<List<DispenseRequestResponse>> getPendingDispenseRequests(
-		@RequestHeader("X-User-Role") String role
-	) {
-		if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
-			throw new ResponseStatusException(
-				HttpStatus.FORBIDDEN,
-				"Only pharmacists can view pending dispense requests"
-			);
-		}
+    @GetMapping("/pending")
+    public ResponseEntity<List<DispenseRequestResponse>> getPendingDispenseRequests(
+            @RequestHeader("X-User-Role") String role
+    ) {
+        if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only pharmacists can view pending dispense requests"
+            );
+        }
 
-		return ResponseEntity.ok(dispenseService.getPendingRequests());
-	}
+        return ResponseEntity.ok(dispenseService.getPendingRequests());
+    }
 
-	@PutMapping("/{id}")
-	public ResponseEntity<DispenseRequestResponse> dispenseMedicine(
-		@RequestHeader("X-User-Role") String role,
-		@PathVariable Long id
-	) {
-		if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacists can dispense medicines");
-		}
+    @PutMapping("/{id}")
+    public ResponseEntity<DispenseRequestResponse> dispenseMedicine(
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable Long id
+    ) {
+        if (!role.contains("PHARMACIST") && !role.contains("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pharmacists can dispense medicines");
+        }
 
-		DispenseRequestResponse response = dispenseService.dispense(id);
-		return ResponseEntity.ok(response);
-	}
+        DispenseRequestResponse response = dispenseService.dispense(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/prescription/{prescriptionId}")
+    public ResponseEntity<List<DispenseRequestResponse>> updateDispenseRequest(
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable Long prescriptionId,
+            @RequestBody CreateDispenseRequest request
+    ) {
+        if (!role.contains("PHARMACIST") && !role.contains("ADMIN") &&
+                !role.contains("DOCTOR")) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only pharmacists or doctors can edit dispense requests");
+        }
+
+        List<DispenseRequestResponse> updated =
+                dispenseService.updateDispenseRequest(prescriptionId, request);
+        return ResponseEntity.ok(updated);
+    }
 }

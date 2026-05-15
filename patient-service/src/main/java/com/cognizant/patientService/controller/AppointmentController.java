@@ -348,15 +348,15 @@ public class AppointmentController {
 		}
 	)
 	@GetMapping("/patient/{patientId}")
-	public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointmentByPatientId(
+	public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAppointmentByPatientId(
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long patientId
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
-		AppointmentDTO appointmentDTO = appointmentService.getAppointmentByPatientId(patientId);
-		if (appointmentDTO != null) {
+		List<AppointmentDTO> appointmentDTO = appointmentService.getAppointmentByPatientId(patientId);
+		if (appointmentDTO != null || !appointmentDTO.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Appointment Retrieved Successfully", appointmentDTO));
 		} else {
 			return ResponseEntity
