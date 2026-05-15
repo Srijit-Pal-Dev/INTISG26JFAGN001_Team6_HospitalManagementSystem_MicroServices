@@ -6,6 +6,8 @@ import com.cognizant.prescriptionservice.dto.DoctorResponse;
 import com.cognizant.prescriptionservice.exception.ResourceNotFoundException;
 import com.cognizant.prescriptionservice.mapper.DoctorMapper;
 import com.cognizant.prescriptionservice.repository.DoctorRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +44,7 @@ public class DoctorServiceImpl implements DoctorService {
 			.findByUserId(userId)
 			.orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-		DoctorMapper.updateEntity(request, doctor);
+		DoctorMapper.updateEntity(doctor, request);
 		return DoctorMapper.toDTO(doctorRepository.save(doctor));
 	}
 
@@ -53,5 +55,15 @@ public class DoctorServiceImpl implements DoctorService {
 			.findById(doctorId)
 			.orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
 		return DoctorMapper.toDTO(doctor);
+	}
+
+	@Transactional
+	@Override
+	public List<DoctorResponse> getAllDoctor() {
+		List<Doctor> doctor = doctorRepository.findAll();
+		if (doctor.isEmpty()) {
+			new ResourceNotFoundException("Doctors not found");
+		}
+		return doctor.stream().map(DoctorMapper::toDTO).collect(Collectors.toList());
 	}
 }

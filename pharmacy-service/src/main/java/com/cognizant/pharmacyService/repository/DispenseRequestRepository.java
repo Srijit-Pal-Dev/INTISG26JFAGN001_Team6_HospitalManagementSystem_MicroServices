@@ -12,17 +12,19 @@ import com.cognizant.pharmacyService.domain.DispenseStatus;
 @Repository
 public interface DispenseRequestRepository extends JpaRepository<DispenseRequest, Long> {
 
-	List<DispenseRequest> findByStatus(DispenseStatus status);
+    List<DispenseRequest> findByStatus(DispenseStatus status);
 
-	List<DispenseRequest> findByAppointmentId(Long appointmentId);
+    List<DispenseRequest> findByAppointmentId(Long appointmentId);
 
-	@Query("""
+    @Query("""
 			    SELECT SUM(d.totalPrice)
 			    FROM DispenseRequest d
 			    WHERE d.appointmentId = :appointmentId
 			    AND d.status = 'DISPENSED'
 			""")
-	BigDecimal calculateTotalMedicineFee(@Param("appointmentId") Long appointmentId);
+    BigDecimal calculateTotalMedicineFee(@Param("appointmentId") Long appointmentId);
 
-	List<DispenseRequest> findByAppointmentIdAndStatus(Long appointmentId, DispenseStatus status);
+    List<DispenseRequest> findByAppointmentIdAndStatus(Long appointmentId, DispenseStatus status);
+
+    List<DispenseRequest> findByPrescriptionIdAndStatus(Long prescriptionId, DispenseStatus status);
 }

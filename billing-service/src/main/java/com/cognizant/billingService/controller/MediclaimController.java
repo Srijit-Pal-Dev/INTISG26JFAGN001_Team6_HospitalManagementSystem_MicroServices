@@ -84,7 +84,7 @@ public class MediclaimController {
 			return ResponseEntity
 				.status(404)
 				.body(new ApiResponse<>(404, "Mediclaims not found for patient id: " + patientId, null));
-		}
+		}  
 	}
 
 	@GetMapping("/all")

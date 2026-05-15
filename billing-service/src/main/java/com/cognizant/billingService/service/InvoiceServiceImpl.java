@@ -6,18 +6,17 @@ import com.cognizant.billingService.domain.InvoiceStatus;
 import com.cognizant.billingService.domain.Payment;
 import com.cognizant.billingService.domain.PaymentStatus;
 import com.cognizant.billingService.dto.*;
+import com.cognizant.billingService.exception.ResourceNotFoundException;
 import com.cognizant.billingService.mapper.InvoiceMapper;
-import com.cognizant.billingService.mapper.PaymentMapper;
 import com.cognizant.billingService.respository.InvoiceRepository;
 import com.cognizant.billingService.respository.PaymentRepository;
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,9 +66,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 		}
 		PatientDTO patient = getPatientInfo(patientId);
 		AppointmentDTO appointment = getAppointmentInfo(appointmentId);
-//        System.out.println("AppointmentDTO : "+appointment);
+		//        System.out.println("AppointmentDTO : "+appointment);
 		DoctorDTO doctor = getDoctorInfo(appointment.getDoctorId());
-//        System.out.println("Doctor DTO : "+doctor);
+		//        System.out.println("Doctor DTO : "+doctor);
 		Long count = invoiceRepository.count() + 1;
 		String generatedInvoice = "INV" + String.format("%05d", count);
 
@@ -350,9 +349,36 @@ public class InvoiceServiceImpl implements InvoiceService {
 			.findById(invoiceId)
 			.orElseThrow(() -> new RuntimeException("Invoice with id " + invoiceId + " not found"));
 		createPaymentForInvoice(invoice, invoice.getPatientId());
-        Optional<Payment> payment = paymentRepository.findByInvoiceId(invoiceId);
-        invoice.setPayment(payment.get());
+		Optional<Payment> payment = paymentRepository.findByInvoiceId(invoiceId);
+		invoice.setPayment(payment.get());
 		return InvoiceMapper.toDTO(invoice);
+	}
+
+	@Transactional
+	@Override
+	public List<InvoiceDTO> getInvoiceByPatientId(Long patientId) {
+		List<Invoice> invoices = invoiceRepository.findByPatientId(patientId);
+		if (invoices.isEmpty()) {
+			return Collections.emptyList();
+		}
+		return invoices
+			.stream()
+			.map(invoice -> {
+				PatientDTO patient = getPatientInfo(invoice.getPatientId());
+				DoctorDTO doctor = getDoctorInfo(invoice.getDoctorId());
+				AppointmentDTO appointment = getAppointmentInfo(invoice.getAppointmentId());
+				List<PharmacyDTO> medicines = getMedicinesByAppointmentId(invoice.getAppointmentId());
+				List<LabDTO> labTests = getLabTestsByAppointmentId(invoice.getAppointmentId());
+
+				InvoiceDTO dto = InvoiceMapper.toDTO(invoice);
+				dto.setPatient(patient);
+				dto.setDoctor(doctor);
+				dto.setAppointment(appointment);
+				dto.setMedicines(medicines);
+				dto.setLabTests(labTests);
+				return dto;
+			})
+			.collect(Collectors.toList());
 	}
 
 	/* this is a helper method to create a payment record for an invoice. It takes the invoice
@@ -408,7 +434,13 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@CircuitBreaker(name = "pharmacyServiceCB", fallbackMethod = "getMedicinesByAppointmentIdFallback")
 	private List<PharmacyDTO> getMedicinesByAppointmentId(Long appointmentId) {
 		String roles = "ADMIN,USER,RECEPTIONIST,PHARMACIST";
-		return pharmacyClient.getMedicinesByAppointmentId(roles, appointmentId);
+		try {
+			return pharmacyClient.getMedicinesByAppointmentId(roles, appointmentId);
+		} catch (FeignException.NotFound e) {
+			return Collections.emptyList();
+		} catch (FeignException e) {
+			return Collections.emptyList();
+		}
 	}
 
 	private List<PharmacyDTO> getMedicinesByAppointmentIdFallback(Long appointmentId, Throwable t) {
@@ -418,8 +450,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@CircuitBreaker(name = "labServiceCB", fallbackMethod = "getLabTestsByAppointmentIdFallback")
 	private List<LabDTO> getLabTestsByAppointmentId(Long appointmentId) {
-		String roles = "ADMIN,USER,RECEPTIONIST,LAB_TECHNICIAN";
-		return labClient.getLabTestsByAppointmentId(roles, appointmentId).getData();
+		String roles = "ADMIN,USER,RECEPTIONIST,PHARMACIST";
+		try {
+			return labClient.getLabTestsByAppointmentId(roles, appointmentId).getData();
+		} catch (FeignException.NotFound e) {
+			return Collections.emptyList();
+		} catch (FeignException e) {
+			return Collections.emptyList();
+		}
 	}
 
 	private List<LabDTO> getLabTestsByAppointmentIdFallback(Long appointmentId, Throwable t) {

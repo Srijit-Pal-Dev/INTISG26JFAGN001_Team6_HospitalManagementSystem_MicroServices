@@ -29,7 +29,8 @@ public class PaymentController {
 			!roles.contains("RECEPTIONIST") &&
 			!roles.contains("ADMIN") &&
 			!roles.contains("LAB_TECHNICIAN") &&
-			!roles.contains("PHARMACIST")
+			!roles.contains("PHARMACIST") &&
+			!roles.contains("USER")
 		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}

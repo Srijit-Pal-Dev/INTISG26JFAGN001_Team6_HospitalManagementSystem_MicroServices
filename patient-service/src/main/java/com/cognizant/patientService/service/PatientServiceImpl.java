@@ -11,7 +11,6 @@ import com.cognizant.patientService.repository.PatientRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,6 +118,16 @@ public class PatientServiceImpl implements PatientService {
 		List<Patient> patientList = patientRepository.findAll();
 		if (patientList.isEmpty()) {
 			throw new ResourceNotFoundException("Patients not found");
+		}
+		return patientList.stream().map(PatientMapper::toDto).collect(Collectors.toList());
+	}
+
+	@Transactional
+	@Override
+	public List<PatientDTO> getPatientByUserId(Long userId) {
+		List<Patient> patientList = patientRepository.getPatientByUserId(userId);
+		if (patientList.isEmpty()) {
+			throw new ResourceNotFoundException("Patient not found");
 		}
 		return patientList.stream().map(PatientMapper::toDto).collect(Collectors.toList());
 	}

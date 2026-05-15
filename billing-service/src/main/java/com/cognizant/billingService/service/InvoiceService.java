@@ -3,6 +3,7 @@ package com.cognizant.billingService.service;
 import com.cognizant.billingService.dto.InvoiceDTO;
 import com.cognizant.billingService.dto.LabDTO;
 import com.cognizant.billingService.dto.PharmacyDTO;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,4 +22,7 @@ public interface InvoiceService {
     void deleteInvoice(Long id);
 
     InvoiceDTO createPayemntForInvoice(Long invoiceId);
+
+    @Transactional
+    List<InvoiceDTO> getInvoiceByPatientId(Long patientId);
 }

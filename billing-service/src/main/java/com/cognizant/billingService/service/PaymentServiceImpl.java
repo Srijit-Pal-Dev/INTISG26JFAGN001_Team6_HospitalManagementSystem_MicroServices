@@ -112,6 +112,13 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setTransactionId(transactionId);
 		payment.setPaymentMethod(method);
 
+        Invoice invoice = invoiceRepository.findByPaymentId(paymentId)
+                .orElse(null);
+        if (invoice != null) {
+            invoice.setInvoiceStatus(InvoiceStatus.PAID);
+            invoiceRepository.save(invoice);
+        }
+
 		Payment updated = paymentRepository.save(payment);
 		NotificationDTO notification = NotificationDTO
 			.builder()
