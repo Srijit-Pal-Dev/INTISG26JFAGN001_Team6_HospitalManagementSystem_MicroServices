@@ -10,6 +10,22 @@ spring:
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  #Mail Trap Service
+#  mail:
+#    host: sandbox.smtp.mailtrap.io
+#    port: 443
+#    username: 3b2a705f2880f1
+#    password: 398ab90b553c24
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#          connectiontimeout: 10000
+#          timeout: 10000
+#          writetimeout: 10000
+
   # Config server
   config:
     import: optional:configserver:http://localhost:8888

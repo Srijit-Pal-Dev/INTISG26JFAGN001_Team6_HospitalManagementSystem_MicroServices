@@ -10,6 +10,7 @@ import com.cognizant.userservice.dto.UserResponse;
 import com.cognizant.userservice.exception.InvalidRoleException;
 import com.cognizant.userservice.exception.UserNotFoundException;
 import com.cognizant.userservice.mapper.UserMapper;
+import com.cognizant.userservice.repository.RefreshTokenRepository;
 import com.cognizant.userservice.repository.RoleRepository;
 import com.cognizant.userservice.repository.UserRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -17,10 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +31,7 @@ public class UserServiceImpl implements UserService{
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final NotificationClient notificationClient;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     @Transactional
@@ -108,6 +108,7 @@ public class UserServiceImpl implements UserService{
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("User not found with id : " + id);
         }
+        refreshTokenRepository.deleteByUser(userRepository.findById(id).get());
         userRepository.deleteById(id);
     }
 
