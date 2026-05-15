@@ -11,10 +11,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,7 +19,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.*;
@@ -94,8 +90,6 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
 
-
-
         List<String> roles = authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
@@ -114,9 +108,7 @@ public class AuthServiceImpl implements AuthService {
                 .map(role -> role.replace("ROLE_", ""))
                 .orElse("USER");
 
-        SendNotificationRequest sendNotificationRequest = new SendNotificationRequest();
-
-        LoginResponse response = LoginResponse.builder()
+        return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getToken())
                 .id(user.getId())
@@ -124,13 +116,6 @@ public class AuthServiceImpl implements AuthService {
                 .roles(userRole)
                 .fullName(user.getFullName())
                 .build();
-
-//        return Map.of(
-//                "accessToken", accessToken,
-//                "refreshToken", refreshToken.getToken()
-//        );
-
-        return response;
 
     }
 
