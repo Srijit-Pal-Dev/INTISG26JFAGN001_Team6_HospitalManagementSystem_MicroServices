@@ -7,7 +7,7 @@ import java.util.List;
 public interface MediclaimService {
 	MediclaimDTO createMediclaim(MediclaimDTO mediclaimDTO);
 
-	MediclaimDTO updateMediclaimStatus(Long id, MediclaimStatus status);
+	MediclaimDTO updateMediclaimStatus(Long userId, Long id, MediclaimStatus status);
 
 	MediclaimDTO getMediclaimById(Long id);
 
