@@ -94,7 +94,7 @@ public class MediclaimServiceImpl implements MediclaimService {
     updated DTO. */
 	@Override
 	@Transactional
-	public MediclaimDTO updateMediclaimStatus(Long id, MediclaimStatus status) {
+	public MediclaimDTO updateMediclaimStatus(Long userId, Long id, MediclaimStatus status) {
 		Mediclaim mediclaim = mediclaimRepository
 			.findById(id)
 			.orElseThrow(() -> new ResourceNotFoundException("Mediclaim with id " + id + " not found"));
@@ -103,7 +103,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 		if (status == MediclaimStatus.APPROVED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(mediclaim.getPatientId())
+				.userId(userId)
 				.title("Mediclaim Approved")
 				.message(
 					"Your mediclaim for invoice " +
@@ -117,7 +117,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 		} else if (status == MediclaimStatus.REJECTED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(mediclaim.getPatientId())
+				.userId(userId)
 				.title("Mediclaim Rejected")
 				.message(
 					"Your mediclaim for invoice " +
