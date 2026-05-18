@@ -24,6 +24,7 @@ public class PrescriptionMedicine {
     private String frequency;
     private String duration;
     private String instructions;
+    private Integer quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prescription_id", nullable = false)

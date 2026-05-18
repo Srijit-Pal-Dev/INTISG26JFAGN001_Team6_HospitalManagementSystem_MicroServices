@@ -17,7 +17,7 @@ public class LabResult {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String ResultValue;
+    private String resultValue;
     private String unit;
     private BigDecimal fee;
     private String referenceRange;

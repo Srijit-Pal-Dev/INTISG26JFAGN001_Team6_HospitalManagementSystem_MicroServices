@@ -13,7 +13,7 @@ import java.util.List;
 )
 public interface PharmacyClient {
 
-    @PostMapping("/dispense/create")
+    @PostMapping("/dispense")
     void createDispenseRequest(
             @RequestHeader("X-User-Role") String role,
             @RequestBody DispenseRequest request);

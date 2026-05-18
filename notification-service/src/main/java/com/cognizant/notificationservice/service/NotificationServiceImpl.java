@@ -47,6 +47,15 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public List<NotificationResponse> getAllNotif() {
+        return notificationRepository
+                .findAll()
+                .stream()
+                .map(notificationMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public List<NotificationResponse> getUnread(Long userId) {
         return notificationRepository

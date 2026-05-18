@@ -8,10 +8,9 @@ import java.util.List;
 public class LabClientFallback implements LabClient {
 
     @Override
-    public List<LabTestResponse> createTest(String roles, LabTestRequest request) {
+    public void createTest(String roles, LabTestRequest request) {
         System.out.println(
                 "Lab Service DOWN. Lab test creation skipped."
         );
-        return List.of();
     }
 }

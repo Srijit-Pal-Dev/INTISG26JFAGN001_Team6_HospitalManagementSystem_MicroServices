@@ -202,16 +202,6 @@ public class LabTestServiceImpl implements LabTestService {
 		return tests.stream().map(mapper::toDto).toList();
 	}
 
-	// PRIVATE HELPER
-	//  @Transactional
-	//  private LabTest getLabTestOrThrow(Long id) {
-	//     return labTestRepository.findById(id).orElseThrow(() -> new LabTestNotFoundException(id));
-	//     //        private LabResult getLabResultOrThrow(Long id){
-	//     //            return labResultRepository.findById(id)
-	//     //                    .orElseThrow(() -> new LabResultNotFoundException(id));
-	//     //        }
-	//  }
-
 	@CircuitBreaker(name = "notificationServiceCB", fallbackMethod = "createNotificationFallback")
 	private NotificationResponse createNotification(NotificationResponse notification) {
 		notificationClient.send(notification);
