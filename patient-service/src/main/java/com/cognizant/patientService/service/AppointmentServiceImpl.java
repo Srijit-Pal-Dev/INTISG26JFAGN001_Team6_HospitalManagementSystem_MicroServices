@@ -16,6 +16,8 @@ import com.cognizant.patientService.repository.AppointmentRepository;
 import com.cognizant.patientService.repository.DoctorSlotRepository;
 import com.cognizant.patientService.repository.PatientRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -196,20 +198,17 @@ public class AppointmentServiceImpl implements AppointmentService {
 		return appointment.stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
 	}
 
-	/* this method retrieves an appointment by the doctor ID. It checks if the appointment exists for the given
-     doctor ID and returns its DTO. If the appointment is not found, it throws a RuntimeException. */
-	@Override
-	@Transactional
-	public AppointmentDTO getAppointmentByDoctorId(Long doctorId) {
-		Appointment appointment = appointmentRepository
-			.findByDoctorId(doctorId)
-			.orElseThrow(() -> new RuntimeException("Appointment with doctor id " + doctorId + " not found"));
 
-		return AppointmentMapper.toDTO(appointment);
-	}
+    @Override
+    @Transactional
+    public List<AppointmentDTO> getAppointmentByDoctorId(Long doctorId) {
+        List<Appointment> appointments = appointmentRepository.findByDoctorId(doctorId);
+        if (appointments.isEmpty()) {
+            throw new ResourceNotFoundException("Appointments not found for doctor id " + doctorId);
+        }
+        return appointments.stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
+    }
 
-	/* this method retrieves an appointment by its status. It checks if the appointment exists for the given
-     status and returns its DTO. If the appointment is not found, it throws a RuntimeException. */
 	@Override
 	@Transactional
 	public AppointmentDTO getAppointmentByStatus(Status status) {

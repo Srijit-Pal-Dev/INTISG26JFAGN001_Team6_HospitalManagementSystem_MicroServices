@@ -231,21 +231,36 @@ class AppointmentServiceImplTest {
 		assertThrows(RuntimeException.class, () -> appointmentService.getAppointmentByPatientId(99L));
 	}
 
-	@Test
-	void getAppointmentByDoctorId_Success() {
-		when(appointmentRepository.findByDoctorId(5L)).thenReturn(Optional.of(appointment));
+//	@Test
+//	void getAppointmentByDoctorId_Success() {
+//		when(appointmentRepository.findByDoctorId(5L)).thenReturn(Optional.of(appointment));
+//
+//		AppointmentDTO result = appointmentService.getAppointmentByDoctorId(5L);
+//
+//		assertNotNull(result);
+//	}
+    @Test
+    void getAppointmentByDoctorId_Success() {
+        when(appointmentRepository.findByDoctorId(5L)).thenReturn(List.of(appointment));
 
-		AppointmentDTO result = appointmentService.getAppointmentByDoctorId(5L);
+        List<AppointmentDTO> result = appointmentService.getAppointmentByDoctorId(5L);
 
-		assertNotNull(result);
-	}
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
 
-	@Test
-	void getAppointmentByDoctorId_NotFound() {
-		when(appointmentRepository.findByDoctorId(99L)).thenReturn(Optional.empty());
+//	@Test
+//	void getAppointmentByDoctorId_NotFound() {
+//		when(appointmentRepository.findByDoctorId(99L)).thenReturn(Optional.empty());
+//
+//		assertThrows(RuntimeException.class, () -> appointmentService.getAppointmentByDoctorId(99L));
+//	}
+    @Test
+    void getAppointmentByDoctorId_NotFound() {
+        when(appointmentRepository.findByDoctorId(99L)).thenReturn(List.of());
 
-		assertThrows(RuntimeException.class, () -> appointmentService.getAppointmentByDoctorId(99L));
-	}
+        assertThrows(ResourceNotFoundException.class, () -> appointmentService.getAppointmentByDoctorId(99L));
+    }
 
 	@Test
 	void getAppointmentByStatus_Success() {
