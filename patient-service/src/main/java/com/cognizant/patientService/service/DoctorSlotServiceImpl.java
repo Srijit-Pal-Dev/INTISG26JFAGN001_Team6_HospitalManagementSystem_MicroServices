@@ -59,7 +59,7 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
 			.userId(userId)
 			.title("Slot Created")
 			.message(
-				"A new slot has been created for doctor id " +
+				"A new slot has been created for doctor " +
 				saved.getDoctorId() +
 				" on " +
 				saved.getSlotDate() +
