@@ -97,7 +97,7 @@ public class AppointmentController {
 	@PostMapping("/create")
 	public ResponseEntity<ApiResponse<AppointmentDTO>> createAppointment(
 		@RequestHeader("X-User-Role") String roles,
-        @RequestHeader("X-User-Id") Long userId,
+		@RequestHeader("X-User-Id") Long userId,
 		@Valid @RequestBody AppointmentDTO appointmentDTO
 	) {
 		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
@@ -185,7 +185,12 @@ public class AppointmentController {
 		@PathVariable Long id,
 		@Valid @RequestBody AppointmentDTO appointmentDTO
 	) {
-		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
+		if (
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("USER") &&
+			!roles.contains("DOCTOR")
+		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		AppointmentDTO updatedAppointment = appointmentService.updateAppointment(id, appointmentDTO);
@@ -266,7 +271,12 @@ public class AppointmentController {
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long id
 	) {
-		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
+		if (
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("USER") &&
+			!roles.contains("DOCTOR")
+		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		AppointmentDTO appointmentDTO = appointmentService.getAppointmentById(id);
@@ -438,7 +448,12 @@ public class AppointmentController {
 		@RequestHeader("X-User-Role") String roles,
 		@PathVariable Long doctorId
 	) {
-		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
+		if (
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("USER") &&
+			!roles.contains("DOCTOR")
+		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		AppointmentDTO appointmentDTO = appointmentService.getAppointmentByDoctorId(doctorId);
@@ -524,7 +539,12 @@ public class AppointmentController {
 		@RequestHeader("X-User-Role") String roles,
 		@RequestParam Status status
 	) {
-		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
+		if (
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("USER") &&
+			!roles.contains("DOCTOR")
+		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		AppointmentDTO appointmentDTO = appointmentService.getAppointmentByStatus(status);
@@ -615,7 +635,12 @@ public class AppointmentController {
 	public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAllAppointments(
 		@RequestHeader("X-User-Role") String roles
 	) {
-		if (!roles.contains("RECEPTIONIST") && !roles.contains("ADMIN") && !roles.contains("USER")) {
+		if (
+			!roles.contains("RECEPTIONIST") &&
+			!roles.contains("ADMIN") &&
+			!roles.contains("USER") &&
+			!roles.contains("DOCTOR")
+		) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		List<AppointmentDTO> appointments = appointmentService.getAllAppointments();
