@@ -13,7 +13,7 @@ public interface AppointmentService {
 
 	List<AppointmentDTO> getAppointmentByPatientId(Long patientId);
 
-	AppointmentDTO getAppointmentByDoctorId(Long doctorId);
+    List<AppointmentDTO> getAppointmentByDoctorId(Long doctorId);
 
 	AppointmentDTO getAppointmentByStatus(Status status);
 
