@@ -46,7 +46,7 @@ public class Patient {
 	@Column(nullable = false)
 	private String bloodGroup;
 
-	@Column(nullable = false, length = 20, unique = true)
+	@Column(nullable = false, length = 20)
 	private String phoneNo;
 
 	@Column(nullable = false, length = 50)
