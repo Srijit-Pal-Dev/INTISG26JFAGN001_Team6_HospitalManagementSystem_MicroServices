@@ -202,31 +202,60 @@ public class DoctorSlotServiceImpl implements DoctorSlotService {
      not found, it throws a RuntimeException. If the slot exists, it deletes it from the database and sends a notification
      to the user associated with the slot, informing them about the deletion. The notification includes details about the
      doctor, date, and time of the deleted slot. */
-	@Override
-	@Transactional
-	public void deleteSlot(Long id) {
-		DoctorSlot slot = doctorSlotRepository
-			.findById(id)
-			.orElseThrow(() -> new RuntimeException("Doctor Slot with " + id + " not found"));
+//	@Override
+//	@Transactional
+//	public void deleteSlot(Long id) {
+//		DoctorSlot slot = doctorSlotRepository
+//			.findById(id)
+//			.orElseThrow(() -> new RuntimeException("Doctor Slot with " + id + " not found"));
+//
+//		doctorSlotRepository.deleteById(id);
+//
+//		NotificationDTO notification = NotificationDTO
+//			.builder()
+//			.userId(slot.getUserId())
+//			.title("Slot Deleted")
+//			.message(
+//				"A slot has been deleted for doctor id " +
+//				slot.getDoctorId() +
+//				" on " +
+//				slot.getSlotDate() +
+//				" at " +
+//				slot.getSlotTime()
+//			)
+//			.type(NotificationType.GENERAL)
+//			.build();
+//		createNotification(notification);
+//	}
+    @Override
+    @Transactional
+    public void deleteSlot(Long id) {
+        DoctorSlot slot = doctorSlotRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("Doctor Slot with " + id + " not found"));
 
-		doctorSlotRepository.deleteById(id);
+        doctorSlotRepository.deleteById(id);
 
-		NotificationDTO notification = NotificationDTO
-			.builder()
-			.userId(slot.getUserId())
-			.title("Slot Deleted")
-			.message(
-				"A slot has been deleted for doctor id " +
-				slot.getDoctorId() +
-				" on " +
-				slot.getSlotDate() +
-				" at " +
-				slot.getSlotTime()
-			)
-			.type(NotificationType.GENERAL)
-			.build();
-		createNotification(notification);
-	}
+        try {
+            NotificationDTO notification = NotificationDTO
+                    .builder()
+                    .userId(slot.getUserId())
+                    .title("Slot Deleted")
+                    .message(
+                            "A slot has been deleted for doctor id " +
+                                    slot.getDoctorId() +
+                                    " on " +
+                                    slot.getSlotDate() +
+                                    " at " +
+                                    slot.getSlotTime()
+                    )
+                    .type(NotificationType.GENERAL)
+                    .build();
+            createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Notification failed for slot deletion (non-fatal): " + e.getMessage());
+        }
+    }
 
 	/* this method sends a notification to the notification service using the NotificationServiceClient.
     It is annotated with @CircuitBreaker to handle failures gracefully. If the notification service is down
