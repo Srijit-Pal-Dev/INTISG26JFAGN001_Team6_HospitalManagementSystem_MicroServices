@@ -24,12 +24,13 @@ public class LabController {
 	@PostMapping("/create")
 	public ResponseEntity<ApiResponse<List<LabTestResponse>>> createTest(
 		@RequestHeader("X-User-Role") String roles,
+        @RequestHeader("X-USER-ID") Long userId,
 		@Valid @RequestBody CreateLabTestRequest request
 	) {
 		if (!roles.contains("DOCTOR") && !roles.contains("ADMIN")) {
 			throw new InvalidRoleException("Invalid Role: Only users with DOCTOR role can create lab tests");
 		}
-		List<LabTestResponse> labTest = labTestService.createLabTests(request);
+		List<LabTestResponse> labTest = labTestService.createLabTests(userId,request);
 		if (labTest != null && !labTest.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Lab tests created successfully", labTest));
 		} else {

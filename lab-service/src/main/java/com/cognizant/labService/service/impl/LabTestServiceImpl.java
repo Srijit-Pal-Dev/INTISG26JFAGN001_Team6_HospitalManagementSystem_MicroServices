@@ -48,7 +48,7 @@ public class LabTestServiceImpl implements LabTestService {
 	// CREATE LAB TEST
 	@Override
 	@Transactional
-	public List<LabTestResponse> createLabTests(CreateLabTestRequest request) {
+	public List<LabTestResponse> createLabTests(Long userId, CreateLabTestRequest request) {
 		List<LabTest> savedTests = new ArrayList<>();
 		BigDecimal totalFee = BigDecimal.ZERO;
 
@@ -91,6 +91,14 @@ public class LabTestServiceImpl implements LabTestService {
 			.toList();
 
 		// Call billing service once with aggregated fee
+        NotificationResponse notification = NotificationResponse
+                .builder()
+                .userId(userId)
+                .title("Lab Test Requested")
+                .message("A lab test has been created")
+                .type(NotificationType.LAB)
+                .build();
+        createNotification(notification);
 		billingClient.updateLabFee("ADMIN", appointmentId, totalFee, responses);
 		return responses;
 	}

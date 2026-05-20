@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface LabTestService {
 	// CREATE LAB TEST
-	List<LabTestResponse> createLabTests(CreateLabTestRequest request);
+	List<LabTestResponse> createLabTests(Long userId, CreateLabTestRequest request);
 
 	List<LabTestResponse> getPendingLabTests();
 	LabTestResponse collectSample(Long labTestId);
