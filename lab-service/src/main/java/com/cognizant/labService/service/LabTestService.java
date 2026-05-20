@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface LabTestService {
 	// CREATE LAB TEST
 	List<LabTestResponse> createLabTests(CreateLabTestRequest request);
-
+    List<LabTestResponse> getAllLabTests();
 	List<LabTestResponse> getPendingLabTests();
 	LabTestResponse collectSample(Long labTestId);
 	LabTestResponse startTest(Long labTestId, String assignedTo, Long userId);
