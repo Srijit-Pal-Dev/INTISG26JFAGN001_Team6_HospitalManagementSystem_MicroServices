@@ -25,218 +25,219 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class LabTestServiceImpl implements LabTestService {
 
-	private final LabTestRepository labTestRepository;
-	private final LabResultRepository labResultRepository;
-	private final LabTestMapper mapper;
-	private final BillingClient billingClient;
-	private final NotificationClient notificationClient;
+    private final LabTestRepository labTestRepository;
+    private final LabResultRepository labResultRepository;
+    private final LabTestMapper mapper;
+    private final BillingClient billingClient;
+    private final NotificationClient notificationClient;
 
-	public LabTestServiceImpl(
-		LabTestRepository labTestRepository,
-		LabResultRepository labResultRepository,
-		LabTestMapper mapper,
-		BillingClient billingClient,
-		NotificationClient notificationClient
-	) {
-		this.labTestRepository = labTestRepository;
-		this.labResultRepository = labResultRepository;
-		this.mapper = mapper;
-		this.billingClient = billingClient;
-		this.notificationClient = notificationClient;
-	}
+    public LabTestServiceImpl(
+            LabTestRepository labTestRepository,
+            LabResultRepository labResultRepository,
+            LabTestMapper mapper,
+            BillingClient billingClient,
+            NotificationClient notificationClient
+    ) {
+        this.labTestRepository = labTestRepository;
+        this.labResultRepository = labResultRepository;
+        this.mapper = mapper;
+        this.billingClient = billingClient;
+        this.notificationClient = notificationClient;
+    }
 
-	// CREATE LAB TEST
-	@Override
-	@Transactional
-	public List<LabTestResponse> createLabTests(Long userId, CreateLabTestRequest request) {
-		List<LabTest> savedTests = new ArrayList<>();
-		BigDecimal totalFee = BigDecimal.ZERO;
+    @Override
+    @Transactional
+    public List<LabTestResponse> getAllLabTests() {
+        return labTestRepository.findAll()
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
 
-		long count = labTestRepository.count();
+    // CREATE LAB TEST
+    @Override
+    @Transactional
+    public List<LabTestResponse> createLabTests(CreateLabTestRequest request) {
+        List<LabTest> savedTests = new ArrayList<>();
+        BigDecimal totalFee = BigDecimal.ZERO;
 
-		for (LabTestResponse testRequest : request.getTests()) {
-			LabTest test = new LabTest();
-			test.setPatientId(testRequest.getPatientId());
-			test.setAppointmentId(testRequest.getAppointmentId());
-			test.setTestName(testRequest.getTestName());
-			test.setFee(testRequest.getFee());
-			test.setStatus(LabTestStatus.PENDING);
-			test.setCreatedAt(LocalDateTime.now());
+        long count = labTestRepository.count();
 
-			// Generate unique test code based on count
-			String testCode = "T" + String.format("%03d", ++count);
-			test.setTestCode(testCode);
+        for (LabTestResponse testRequest : request.getTests()) {
+            LabTest test = new LabTest();
+            test.setPatientId(testRequest.getPatientId());
+            test.setAppointmentId(testRequest.getAppointmentId());
+            test.setTestName(testRequest.getTestName());
+            test.setFee(testRequest.getFee());
+            test.setStatus(LabTestStatus.PENDING);
+            test.setCreatedAt(LocalDateTime.now());
 
-			LabTest saved = labTestRepository.save(test);
-			savedTests.add(saved);
+            // Generate unique test code based on count
+            String testCode = "T" + String.format("%03d", ++count);
+            test.setTestCode(testCode);
 
-			totalFee = totalFee.add(saved.getFee());
-		}
+            LabTest saved = labTestRepository.save(test);
+            savedTests.add(saved);
 
-		Long appointmentId = request.getAppointmentId();
-		List<LabTestResponse> responses = savedTests
-			.stream()
-			.map(saved ->
-				new LabTestResponse(
-					saved.getId(),
-					saved.getPatientId(),
-					saved.getAppointmentId(),
-					saved.getTestName(),
-					saved.getTestCode(),
-					saved.getStatus().name(),
-					saved.getFee(),
-					saved.getCreatedAt()
-				)
-			)
-			.toList();
+            totalFee = totalFee.add(saved.getFee());
+        }
 
-		// Call billing service once with aggregated fee
+        Long appointmentId = request.getAppointmentId();
+        List<LabTestResponse> responses = savedTests
+                .stream()
+                .map(saved ->
+                        new LabTestResponse(
+                                saved.getId(),
+                                saved.getPatientId(),
+                                saved.getAppointmentId(),
+                                saved.getTestName(),
+                                saved.getTestCode(),
+                                saved.getStatus().name(),
+                                saved.getFee(),
+                                saved.getCreatedAt()
+                        )
+                )
+                .toList();
+
+        // Call billing service once with aggregated fee
+        billingClient.updateLabFee("ADMIN", appointmentId, totalFee, responses);
+        return responses;
+    }
+
+    // READ PENDING LAB TESTS
+    @Override
+    @Transactional
+    public List<LabTestResponse> getPendingLabTests() {
+        List<LabTestResponse> result = labTestRepository
+                .findByStatus(LabTestStatus.PENDING)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+        return result;
+    }
+
+    // UPDATE LAB TEST STATUS - SAMPLE COLLECTED
+    @Override
+    @Transactional
+    public LabTestResponse collectSample(Long labTestId) {
+        LabTest test = labTestRepository.findById(labTestId).orElseThrow(() -> new LabTestNotFoundException(labTestId));
+        test.setStatus(LabTestStatus.SAMPLE_COLLECTED);
+        test.setUpdatedAt(LocalDateTime.now());
+        LabTest saved = labTestRepository.save(test);
+
+        return mapper.toDto(saved);
+    }
+
+    // UPDATE LAB TEST STATUS - IN PROGRESS
+    @Override
+    @Transactional
+    public LabTestResponse startTest(Long labTestId, String assignedTo, Long userId) {
+        LabTest test = labTestRepository.findById(labTestId).orElseThrow(() -> new LabTestNotFoundException(labTestId));
+        test.setStatus(LabTestStatus.IN_PROGRESS);
+        test.setUpdatedAt(LocalDateTime.now());
+        test.setAssignedTo(assignedTo);
+        LabTest saved = labTestRepository.save(test);
+        return mapper.toDto(saved);
+    }
+
+    // UPLOAD LAB RESULT
+    @Override
+    @Transactional
+    public LabResultResponse uploadResult(Long userId, Long labTestId, LabResultResponse resultDto) {
+        LabTest labTest = labTestRepository
+                .findById(labTestId)
+                .orElseThrow(() -> new LabTestNotFoundException(labTestId)); // ensure test exists before creating result
+
+        LabResult existingResult = labResultRepository.findByLabTestId(labTestId);
+        if (existingResult != null) {
+            throw new RuntimeException("Result already exists for this lab test");
+        }
+        LabResult result = new LabResult();
+        result.setUnit(resultDto.getUnit());
+        result.setNotes(resultDto.getNotes());
+        result.setResultValue(resultDto.getResultValue());
+        result.setIsAbnormal(resultDto.getIsAbnormal());
+        result.setRecordedBy(resultDto.getRecordedBy());
+        result.setFee(labTest.getFee());
+        result.setReferenceRange(resultDto.getReferenceRange());
+        result.setRecordedAt(LocalDateTime.now());
+        result.setLabTest(labTest);
+        labTest.setStatus(LabTestStatus.COMPLETED);
+        labTestRepository.save(labTest);
+        LabResult savedResult = labResultRepository.save(result);
         NotificationResponse notification = NotificationResponse
                 .builder()
                 .userId(userId)
-                .title("Lab Test Requested")
-                .message("A lab test has been created")
+                .title("Lab Result Uploaded")
+                .message("Result uploaded for test: " + labTest.getTestName() + " (" + labTest.getTestCode() + ")")
                 .type(NotificationType.LAB)
                 .build();
         createNotification(notification);
-		billingClient.updateLabFee("ADMIN", appointmentId, totalFee, responses);
-		return responses;
-	}
+        return mapper.toDto(savedResult);
+    }
 
-	// READ PENDING LAB TESTS
-	@Override
-	@Transactional
-	public List<LabTestResponse> getPendingLabTests() {
-		List<LabTestResponse> result = labTestRepository
-			.findByStatus(LabTestStatus.PENDING)
-			.stream()
-			.map(mapper::toDto)
-			.toList();
-		return result;
-	}
+    // GET LAB RESULTS BY TEST ID
+    @Override
+    @Transactional
+    public LabResultResponse getResultsByLabTestId(Long labTestId) {
+        // ensure test exists
+        LabResult result = labResultRepository.findByLabTestId(labTestId);
+        if (result == null) {
+            throw new LabTestNotFoundException(labTestId);
+        }
+        return mapper.toDto(result);
+    }
 
-	// UPDATE LAB TEST STATUS - SAMPLE COLLECTED
-	@Override
-	@Transactional
-	public LabTestResponse collectSample(Long labTestId) {
-		LabTest test = labTestRepository.findById(labTestId).orElseThrow(() -> new LabTestNotFoundException(labTestId));
-		test.setStatus(LabTestStatus.SAMPLE_COLLECTED);
-		test.setUpdatedAt(LocalDateTime.now());
-		LabTest saved = labTestRepository.save(test);
+    // GET LAB RESULTS BY PATIENT ID
+    @Override
+    @Transactional
+    public List<LabResultResponse> getResultsByPatientId(Long patientId) {
+        List<LabTest> tests = labTestRepository.findByPatientId(patientId);
+        if (tests.isEmpty()) {
+            throw new LabTestNotFoundException(patientId);
+        }
+        return tests
+                .stream()
+                .map(test -> labResultRepository.findByLabTestId(test.getId()))
+                .filter(Objects::nonNull)
+                .map(result -> mapper.toDto(result))
+                .toList();
+    }
 
-		return mapper.toDto(saved);
-	}
+    @Override
+    @Transactional
+    public List<LabTestResponse> getLabTestsByAppointmentId(Long appointmentId) {
+        List<LabTest> tests = labTestRepository.findByAppointmentId(appointmentId);
+        return tests.stream().map(mapper::toDto).toList();
+    }
 
-	// UPDATE LAB TEST STATUS - IN PROGRESS
-	@Override
-	@Transactional
-	public LabTestResponse startTest(Long labTestId, String assignedTo, Long userId) {
-		LabTest test = labTestRepository.findById(labTestId).orElseThrow(() -> new LabTestNotFoundException(labTestId));
-		test.setStatus(LabTestStatus.IN_PROGRESS);
-		test.setUpdatedAt(LocalDateTime.now());
-		test.setAssignedTo(assignedTo);
-		LabTest saved = labTestRepository.save(test);
-		return mapper.toDto(saved);
-	}
+    @CircuitBreaker(name = "notificationServiceCB", fallbackMethod = "createNotificationFallback")
+    private NotificationResponse createNotification(NotificationResponse notification) {
+        notificationClient.send(notification);
+        return notification;
+    }
 
-	// UPLOAD LAB RESULT
-	@Override
-	@Transactional
-	public LabResultResponse uploadResult(Long userId, Long labTestId, LabResultResponse resultDto) {
-		LabTest labTest = labTestRepository
-			.findById(labTestId)
-			.orElseThrow(() -> new LabTestNotFoundException(labTestId)); // ensure test exists before creating result
+    private NotificationResponse createNotificationFallback(NotificationResponse notification, Throwable t) {
+        System.err.println("Circuit breaker fallback triggered for notification: " + t.getMessage());
+        return notification;
+    }
 
-		LabResult existingResult = labResultRepository.findByLabTestId(labTestId);
-		if (existingResult != null) {
-			throw new RuntimeException("Result already exists for this lab test");
-		}
-		LabResult result = new LabResult();
-		result.setUnit(resultDto.getUnit());
-		result.setNotes(resultDto.getNotes());
-		result.setResultValue(resultDto.getResultValue());
-		result.setIsAbnormal(resultDto.getIsAbnormal());
-		result.setRecordedBy(resultDto.getRecordedBy());
-		result.setFee(labTest.getFee());
-		result.setReferenceRange(resultDto.getReferenceRange());
-		result.setRecordedAt(LocalDateTime.now());
-		result.setLabTest(labTest);
-		labTest.setStatus(LabTestStatus.COMPLETED);
-		labTestRepository.save(labTest);
-		LabResult savedResult = labResultRepository.save(result);
-		NotificationResponse notification = NotificationResponse
-			.builder()
-			.userId(userId)
-			.title("Lab Result Uploaded")
-			.message("Result uploaded for test: " + labTest.getTestName() + " (" + labTest.getTestCode() + ")")
-			.type(NotificationType.LAB)
-			.build();
-		createNotification(notification);
-		return mapper.toDto(savedResult);
-	}
+    @CircuitBreaker(name = "billingServiceCB", fallbackMethod = "initiateInvoiceFallback")
+    private Map<String, Object> createInvoice(
+            Long appointmentId,
+            BigDecimal labFee,
+            List<LabTestResponse> labTestResponses
+    ) {
+        return billingClient.updateLabFee("ADMIN", appointmentId, labFee, labTestResponses);
+    }
 
-	// GET LAB RESULTS BY TEST ID
-	@Override
-	@Transactional
-	public LabResultResponse getResultsByLabTestId(Long labTestId) {
-		// ensure test exists
-		LabResult result = labResultRepository.findByLabTestId(labTestId);
-		if (result == null) {
-			throw new LabTestNotFoundException(labTestId);
-		}
-		return mapper.toDto(result);
-	}
-
-	// GET LAB RESULTS BY PATIENT ID
-	@Override
-	@Transactional
-	public List<LabResultResponse> getResultsByPatientId(Long patientId) {
-		List<LabTest> tests = labTestRepository.findByPatientId(patientId);
-		if (tests.isEmpty()) {
-			throw new LabTestNotFoundException(patientId);
-		}
-		return tests
-			.stream()
-			.map(test -> labResultRepository.findByLabTestId(test.getId()))
-			.filter(Objects::nonNull)
-			.map(result -> mapper.toDto(result))
-			.toList();
-	}
-
-	@Override
-	@Transactional
-	public List<LabTestResponse> getLabTestsByAppointmentId(Long appointmentId) {
-		List<LabTest> tests = labTestRepository.findByAppointmentId(appointmentId);
-		return tests.stream().map(mapper::toDto).toList();
-	}
-
-	@CircuitBreaker(name = "notificationServiceCB", fallbackMethod = "createNotificationFallback")
-	private NotificationResponse createNotification(NotificationResponse notification) {
-		notificationClient.send(notification);
-		return notification;
-	}
-
-	private NotificationResponse createNotificationFallback(NotificationResponse notification, Throwable t) {
-		System.err.println("Circuit breaker fallback triggered for notification: " + t.getMessage());
-		return notification;
-	}
-
-	@CircuitBreaker(name = "billingServiceCB", fallbackMethod = "initiateInvoiceFallback")
-	private Map<String, Object> createInvoice(
-		Long appointmentId,
-		BigDecimal labFee,
-		List<LabTestResponse> labTestResponses
-	) {
-		return billingClient.updateLabFee("ADMIN", appointmentId, labFee, labTestResponses);
-	}
-
-	private Map<String, Object> initiateInvoiceFallback(
-		Long appointmentId,
-		BigDecimal labFee,
-		List<LabTestResponse> labTestResponses,
-		Throwable t
-	) {
-		System.err.println("Circuit breaker fallback triggered for billing service: " + t.getMessage());
-		return null;
-	}
+    private Map<String, Object> initiateInvoiceFallback(
+            Long appointmentId,
+            BigDecimal labFee,
+            List<LabTestResponse> labTestResponses,
+            Throwable t
+    ) {
+        System.err.println("Circuit breaker fallback triggered for billing service: " + t.getMessage());
+        return null;
+    }
 }

@@ -103,7 +103,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 		if (status == MediclaimStatus.APPROVED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(userId)
+				.userId(mediclaim.getPatientId())
 				.title("Mediclaim Approved")
 				.message(
 					"Your mediclaim for invoice " +
