@@ -117,7 +117,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 		} else if (status == MediclaimStatus.REJECTED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(userId)
+				.userId(mediclaim.getPatientId())
 				.title("Mediclaim Rejected")
 				.message(
 					"Your mediclaim for invoice " +
