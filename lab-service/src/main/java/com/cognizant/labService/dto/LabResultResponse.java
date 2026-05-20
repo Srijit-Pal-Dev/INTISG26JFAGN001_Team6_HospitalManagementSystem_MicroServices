@@ -16,6 +16,7 @@ public class LabResultResponse {
 
     private Long id;
     private Long labTestId;
+    private String testName;
     private String resultValue;
     private String unit;
     private String referenceRange;
