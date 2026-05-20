@@ -15,6 +15,7 @@ import com.cognizant.billingService.respository.PaymentRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -46,10 +47,11 @@ public class MediclaimServiceImpl implements MediclaimService {
 	@Transactional
 	public MediclaimDTO createMediclaim(MediclaimDTO mediclaimDTO) {
 		Payment payment = paymentRepository
-			.findById(mediclaimDTO.getPaymentId())
+			.findByInvoiceId(mediclaimDTO.getInvoiceId())
 			.orElseThrow(() ->
-				new ResourceNotFoundException("Payment with id " + mediclaimDTO.getPaymentId() + " not found")
+				new ResourceNotFoundException("No payment found for invoice: " + mediclaimDTO.getInvoiceId())
 			);
+
 		if (payment.getTransactionId() == null) {
 			throw new IllegalStateException("Mediclaim can only be applied on COMPLETED payments");
 		}
@@ -73,14 +75,16 @@ public class MediclaimServiceImpl implements MediclaimService {
 		mediclaim.setAppliedAt(LocalDateTime.now());
 
 		Mediclaim saved = mediclaimRepository.save(mediclaim);
-		NotificationDTO notifcation = NotificationDTO
+
+		NotificationDTO notification = NotificationDTO
 			.builder()
 			.userId(invoice.getPatientId())
 			.title("Mediclaim Applied")
 			.message("Your mediclaim for invoice " + invoice.getId() + " has been applied and is pending review.")
 			.type(NotificationType.MEDICLAIM)
 			.build();
-		createNotification(notifcation);
+		createNotification(notification);
+
 		return MediclaimMapper.toDTO(saved);
 	}
 
@@ -90,7 +94,7 @@ public class MediclaimServiceImpl implements MediclaimService {
     updated DTO. */
 	@Override
 	@Transactional
-	public MediclaimDTO updateMediclaimStatus(Long id, MediclaimStatus status) {
+	public MediclaimDTO updateMediclaimStatus(Long userId, Long id, MediclaimStatus status) {
 		Mediclaim mediclaim = mediclaimRepository
 			.findById(id)
 			.orElseThrow(() -> new ResourceNotFoundException("Mediclaim with id " + id + " not found"));
@@ -99,7 +103,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 		if (status == MediclaimStatus.APPROVED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(mediclaim.getPatientId())
+				.userId(userId)
 				.title("Mediclaim Approved")
 				.message(
 					"Your mediclaim for invoice " +
@@ -113,7 +117,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 		} else if (status == MediclaimStatus.REJECTED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(mediclaim.getPatientId())
+				.userId(userId)
 				.title("Mediclaim Rejected")
 				.message(
 					"Your mediclaim for invoice " +
@@ -148,7 +152,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 	public List<MediclaimDTO> getAllMediclaimsByPatientId(Long patientId) {
 		List<Mediclaim> mediclaims = mediclaimRepository.findByPatientId(patientId);
 		if (mediclaims.isEmpty()) {
-			throw new ResourceNotFoundException("No mediclaims found for patient with id " + patientId);
+			return Collections.emptyList();
 		}
 		return mediclaims.stream().map(MediclaimMapper::toDTO).collect(Collectors.toList());
 	}

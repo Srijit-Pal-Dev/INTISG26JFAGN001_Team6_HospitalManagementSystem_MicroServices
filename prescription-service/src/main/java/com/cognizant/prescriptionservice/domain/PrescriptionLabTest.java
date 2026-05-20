@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "prescription_lab_tests")
 @Getter
@@ -21,6 +23,9 @@ public class PrescriptionLabTest {
     private String testName;
 
     private String notes;
+
+    @Column
+    private BigDecimal fee;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prescription_id", nullable = false)

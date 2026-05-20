@@ -146,4 +146,11 @@ public class NotificationController {
                 Map.of("message", "All notifications marked as read")
         );
     }
+
+    @Operation(summary = "Get all Messages for all types")
+    @GetMapping("/allMessages")
+    public ResponseEntity<List<NotificationResponse>> getAllMessages() {
+        List<NotificationResponse> list = notificationService.getAllNotif();
+        return ResponseEntity.ok(list);
+    }
 }

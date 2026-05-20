@@ -60,6 +60,7 @@ public class LabTestMapper {
                 .isAbnormal(entity.getIsAbnormal())
                 .notes(entity.getNotes())
                 .recordedBy(entity.getRecordedBy())
+                .fee(entity.getFee())
                 .recordedAt(entity.getRecordedAt())
                 .build();
     }

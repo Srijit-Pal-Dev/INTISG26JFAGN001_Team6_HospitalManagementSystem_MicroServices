@@ -4,6 +4,7 @@ import com.cognizant.userservice.domain.*;
 import com.cognizant.userservice.dto.*;
 import com.cognizant.userservice.exception.InvalidRoleException;
 import com.cognizant.userservice.service.AuthService;
+import com.cognizant.userservice.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     @Operation(summary = "Login", description = "Authenticate and receive a JWT token")
@@ -63,6 +65,27 @@ public class AuthController {
 
         authService.logout(request.getRefreshToken());
         return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","Successfully logged out"));
+    }
+
+    @Operation(summary = "Enter Email to send OTP to verify and update password")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        passwordResetService.forgotPassword(request);
+        return ResponseEntity.ok(Map.of("message", "OTP sent to your email."));
+    }
+
+    @Operation(summary = "Verify entered OTP with the actual OTP being generated")
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
+        String resetToken = passwordResetService.verifyOtp(request);
+        return ResponseEntity.ok(Map.of("resetToken", resetToken));
+    }
+
+    @Operation(summary = "Verify OTP and update older password with new password")
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request);
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully."));
     }
 
 }

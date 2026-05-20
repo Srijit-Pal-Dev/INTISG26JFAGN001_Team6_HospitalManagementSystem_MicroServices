@@ -16,7 +16,7 @@ import java.util.List;
 public interface LabClient {
 
     @PostMapping("/lab-tests/create")
-    List<LabTestResponse> createTest(
+    void  createTest(
             @RequestHeader("X-User-Role") String roles,
             @RequestBody LabTestRequest request);
 
@@ -28,12 +28,6 @@ public interface LabClient {
         private Long patientId;
     }
 
-//    @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-//    class LabTestItem {
-//        private String testCode;
-//        private String testName;
-//        private String notes;
-//    }
 
     @Getter @Setter @AllArgsConstructor @NoArgsConstructor
     class LabTestResponse {

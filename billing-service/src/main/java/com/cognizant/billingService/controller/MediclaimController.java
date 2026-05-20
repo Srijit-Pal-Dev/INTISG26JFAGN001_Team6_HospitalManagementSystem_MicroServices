@@ -39,13 +39,14 @@ public class MediclaimController {
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ApiResponse<MediclaimDTO>> updateMediclaim(
 		@RequestHeader("X-User-Role") String roles,
+        @RequestHeader(value = "X-User-Id", required = false) Long userId,
 		@PathVariable Long id,
 		@RequestParam MediclaimStatus status
 	) {
 		if (!roles.contains("ADMIN") && !roles.contains("USER")) {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
-		MediclaimDTO mediClaim = mediclaimService.updateMediclaimStatus(id, status);
+		MediclaimDTO mediClaim = mediclaimService.updateMediclaimStatus(userId, id, status);
 		if (mediClaim != null) {
 			return ResponseEntity.ok(new ApiResponse<>(200, "Mediclaim Updated Successfully", mediClaim));
 		} else {
@@ -78,13 +79,7 @@ public class MediclaimController {
 			throw new InvalidRoleException("Forbidden: You don't have permission to access this resource");
 		}
 		List<MediclaimDTO> mediclaims = mediclaimService.getAllMediclaimsByPatientId(patientId);
-		if (mediclaims != null && !mediclaims.isEmpty()) {
-			return ResponseEntity.ok(new ApiResponse<>(200, "Mediclaims Retrieved Successfully", mediclaims));
-		} else {
-			return ResponseEntity
-				.status(404)
-				.body(new ApiResponse<>(404, "Mediclaims not found for patient id: " + patientId, null));
-		}  
+		return ResponseEntity.ok(new ApiResponse<>(200, "Found", mediclaims));
 	}
 
 	@GetMapping("/all")

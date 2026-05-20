@@ -10,6 +10,7 @@ import lombok.*;
 @Entity
 @Table(name = "roles")
 @Builder
+@ToString
 public class Role {
 
     @Id
@@ -22,4 +23,10 @@ public class Role {
     public Role(RoleName name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return name.name();
+    }
+
 }
