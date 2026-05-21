@@ -1,6 +1,7 @@
 package com.cognizant.billingService.service;
 
 import com.cognizant.billingService.client.NotificationServiceClient;
+import com.cognizant.billingService.client.PatientServiceClient;
 import com.cognizant.billingService.domain.Invoice;
 import com.cognizant.billingService.domain.Mediclaim;
 import com.cognizant.billingService.domain.MediclaimStatus;
@@ -27,16 +28,19 @@ public class MediclaimServiceImpl implements MediclaimService {
 	private final MediclaimRepository mediclaimRepository;
 	private final PaymentRepository paymentRepository;
 	private final NotificationServiceClient notificationClient;
+    private final PatientServiceClient patientClient;
 
 	/* Constructor-based dependency injection for repositories and notification client */
 	public MediclaimServiceImpl(
 		MediclaimRepository mediclaimRepository,
 		PaymentRepository paymentRepository,
-		NotificationServiceClient notificationClient
+		NotificationServiceClient notificationClient,
+        PatientServiceClient patientClient
 	) {
 		this.mediclaimRepository = mediclaimRepository;
 		this.paymentRepository = paymentRepository;
 		this.notificationClient = notificationClient;
+        this.patientClient = patientClient;
 	}
 
 	/* this method creates a mediclaim for a given payment. It checks if the payment
@@ -98,12 +102,12 @@ public class MediclaimServiceImpl implements MediclaimService {
 		Mediclaim mediclaim = mediclaimRepository
 			.findById(id)
 			.orElseThrow(() -> new ResourceNotFoundException("Mediclaim with id " + id + " not found"));
-
 		mediclaim.setStatus(status);
+        Long patientUserId = patientClient.getPatientById("ADMIN",mediclaim.getPatientId()).getData().getUserId();
 		if (status == MediclaimStatus.APPROVED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(mediclaim.getPatientId())
+				.userId(patientUserId)
 				.title("Mediclaim Approved")
 				.message(
 					"Your mediclaim for invoice " +
@@ -117,7 +121,7 @@ public class MediclaimServiceImpl implements MediclaimService {
 		} else if (status == MediclaimStatus.REJECTED) {
 			NotificationDTO notification = NotificationDTO
 				.builder()
-				.userId(mediclaim.getPatientId())
+				.userId(patientUserId)
 				.title("Mediclaim Rejected")
 				.message(
 					"Your mediclaim for invoice " +
